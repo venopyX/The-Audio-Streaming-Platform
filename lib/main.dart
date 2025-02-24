@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -13,113 +15,119 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.black87, // Keep your seed color
+          brightness: Brightness.dark, // Set brightness to dark
+        ),
+        useMaterial3: true, // Keep Material 3 enabled
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home:  YouTubeTwitchTabs(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class YouTubeTwitchTabs extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _YouTubeTwitchTabsState createState() => _YouTubeTwitchTabsState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
+  int _selectedIndex = 0;
 
-  void _incrementCounter() {
+  void _onItemTapped(int index) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times: the hello',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        extendBody: true, // Ensure the body extends behind the navigation bar
+        appBar: AppBar(
+        title: Row(
+        children: [
+        Image.asset(
+        'assets/logo.png', // Path to your logo asset
+        height: 30, // Adjust the height of the logo
+        width: 30, // Adjust the width of the logo
+    ),
+    SizedBox(width: 10), // Add spacing between the logo and text
+    Text(
+    'My App', // App name or title
+    style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    ),
+    ),
+    ],
+    ),
+    backgroundColor: Colors.transparent, // Transparent background
+    elevation: 0, // Remove shadow
+    ),
+    body: Center(
+    child: _selectedIndex == 0
+    ? Text(
+    'YouTube Tab',
+    style: TextStyle(fontSize: 24),
+    )
+        : Text(
+    'Twitch Tab',
+    style: TextStyle(fontSize: 24),
+    ),
+    ),
+    bottomNavigationBar: ClipRect(
+    child: BackdropFilter(
+    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Blur effect
+    child: Container(
+    decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.3), // Semi-transparent white
+    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    child: BottomNavigationBar(
+    currentIndex: _selectedIndex,
+    onTap: _onItemTapped,
+    backgroundColor: Colors.transparent, // Transparent background
+    elevation: 0, // Remove default shadow
+    selectedItemColor: Colors.white, // Selected item color
+    unselectedItemColor: Colors.white.withOpacity(0.5), // Unselected item color
+    items: const <BottomNavigationBarItem>[
+    BottomNavigationBarItem(
+    icon: Icon(Icons.video_library), // YouTube icon
+    label: 'YouTube',
+    ),
+    BottomNavigationBarItem(
+    icon: Icon(Icons.live_tv), // Twitch icon
+    label: 'Twitch',
+    ),
+    ],
+    ),
+    ),
+    ),
+    ),
     );
   }
 }
+
+// Example Screens
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Home Screen'),
+    );
+  }
+}
+
+class SearchScreen extends StatelessWidget {
+  const SearchScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Search Screen'),
+    );
+  }
+}
+

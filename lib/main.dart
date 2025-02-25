@@ -1,7 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-
+import 'youtubepage.dart';
+import 'twitchpage.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -34,7 +35,10 @@ class YouTubeTwitchTabs extends StatefulWidget {
 
 class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
   int _selectedIndex = 0;
-
+  final List<Widget> _pages = [
+    YoutubeScreen(),
+    TwitchScreen(),
+  ];
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -46,17 +50,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
     return Scaffold(
       extendBody: true,
       appBar: CustomAppBar(),
-      body: Center(
-        child: _selectedIndex == 0
-            ? Text(
-          'YouTube Tab',
-          style: TextStyle(fontSize: 24),
-        )
-            : Text(
-          'Twitch Tab',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
+      body: _pages[_selectedIndex],
       bottomNavigationBar: ClipRRect( // Proper clipping applied
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         child: BackdropFilter(
@@ -115,3 +109,4 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 }
+

@@ -36,6 +36,7 @@ dependencies:
   audioplayers: ^6.2.0
   youtube_explode_dart: ^2.3.10
   provider: ^6.1.2
+  flutter_native_splash: ^2.4.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -43,6 +44,7 @@ dependencies:
 
 dev_dependencies:
   flutter_svg: ^2.0.17
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -56,6 +58,11 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo.png"
+
 # The following section is specific to Flutter packages.
 flutter:
 
@@ -67,3 +74,6 @@ flutter:
     - assets/
     - assets/icons/
 
+flutter_native_splash:
+  color: "#42a5f5"
+  image: "assets/logo.png"

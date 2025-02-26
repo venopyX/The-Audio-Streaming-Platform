@@ -56,7 +56,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
           children: [
       // Search bar at the top
       Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
             color: Colors.white,
@@ -83,6 +83,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
             color: Colors.grey, // Light grey hint text
             fontSize: 16,
           ),
+
           prefixIcon: IconButton(
             icon: SvgPicture.asset(
               'assets/icons/youtube.svg',

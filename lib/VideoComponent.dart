@@ -16,7 +16,7 @@ class VideoComponent extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => YoutubeAudioStream(videoId: video.videoId!), // Replace with your video ID
+              builder: (context) => YoutubeAudioPlayer(videoId: video.videoId!), // Replace with your video ID
             ),
           );
         // print(fetchYoutubeStreamUrl(video.videoId!));

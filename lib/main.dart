@@ -1,8 +1,9 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'youtubepage.dart';
 import 'twitchpage.dart';
+import 'BottomPlayer.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -20,9 +21,9 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.black87,
           brightness: Brightness.dark,
         ).copyWith(
-          background: Colors.black, // Set background to pure black
-          surface: Colors.black87, // Set surface to a very dark grey
-          primary: Colors.black87, // Adjust primary for darker look
+          background: Colors.black,
+          surface: Colors.black87,
+          primary: Colors.black87,
         ),
         useMaterial3: true,
       ),
@@ -44,6 +45,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
     YoutubeScreen(),
     TwitchScreen(),
   ];
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -55,21 +57,34 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
     return Scaffold(
       extendBody: true,
       appBar: CustomAppBar(),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: ClipRRect( // Proper clipping applied
+      body: Stack(
+        children: [
+          // Main content
+          _pages[_selectedIndex],
+
+          // BottomPlayer positioned above the bottom navigation
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: kBottomNavigationBarHeight, // Position above the bottom nav
+            child: BottomPlayer(),
+          ),
+        ],
+      ),
+      bottomNavigationBar: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
           child: Container(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
             child: BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: _onItemTapped,
               backgroundColor: Colors.transparent,
               elevation: 0,
-              type: BottomNavigationBarType.fixed, // Prevents shifting
+              type: BottomNavigationBarType.fixed,
               selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white.withValues(alpha: 0.5),
+              unselectedItemColor: Colors.white.withOpacity(0.5),
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.video_library),
@@ -103,7 +118,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             height: 200,
             width: 130,
           ),
-
         ],
       ),
       backgroundColor: Colors.transparent,
@@ -114,4 +128,3 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 }
-

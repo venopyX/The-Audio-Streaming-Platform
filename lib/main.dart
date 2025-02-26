@@ -17,8 +17,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blueGrey,
+          seedColor: Colors.black87,
           brightness: Brightness.dark,
+        ).copyWith(
+          background: Colors.black, // Set background to pure black
+          surface: Colors.black87, // Set surface to a very dark grey
+          primary: Colors.black87, // Adjust primary for darker look
         ),
         useMaterial3: true,
       ),
@@ -55,9 +59,9 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
       bottomNavigationBar: ClipRRect( // Proper clipping applied
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
           child: Container(
-            color: Colors.white.withValues(alpha: 0.3),
+            color: Colors.white.withValues(alpha: 0.1),
             child: BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: _onItemTapped,

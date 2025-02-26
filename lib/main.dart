@@ -1,10 +1,12 @@
 import 'dart:ui';
+import 'package:audiofy/fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'youtubepage.dart';
 import 'twitchpage.dart';
 import 'BottomPlayer.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(
@@ -16,13 +18,123 @@ void main() {
 }
 
 class Playing with ChangeNotifier{
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
   Video _video = Video();
+  final AudioPlayer _audioPlayer = AudioPlayer(); // AudioPlayer moved here
+  bool _isPlaying = false; // Added isPlaying state
 
+  Duration get duration => _duration;
+  Duration get position => _position;
   Video get video => _video;
-
-  void assign(Video v){
-    _video = v;
+  AudioPlayer get audioPlayer => _audioPlayer;
+  bool get isPlaying => _isPlaying; // Getter for isPlaying
+  void setIsPlaying(bool isit){
+    if (isit){
+      playAudio();
+    }
+    else{
+      pauseAudio();
+    }
+    _isPlaying = isit;
     notifyListeners();
+  }
+
+  Playing() {
+    _initAudioPlayer();
+  }
+
+  void _initAudioPlayer() {
+    _audioPlayer.onDurationChanged.listen((Duration d) {
+      _duration = d;
+      notifyListeners();
+    });
+
+    _audioPlayer.onPositionChanged.listen((Duration p) {
+      _position = p;
+      notifyListeners();
+    });
+
+    _audioPlayer.onPlayerComplete.listen((_) {
+      _position = Duration.zero;
+      _isPlaying = false;
+      notifyListeners();
+    });
+
+    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+      _isPlaying = state == PlayerState.playing;
+      notifyListeners();
+    });
+  }
+
+  void assign(Video v) async{
+    _video = v;
+    resetAllDurationAndPosition();
+    await pauseAudio();
+    var url =await  fetchYoutubeStreamUrl(v.videoId!);
+    streamAudio(url);
+    notifyListeners();
+  }
+
+  void updateDuration(Duration d) {
+    _duration = d;
+    notifyListeners();
+  }
+
+  void updatePosition(Duration p) {
+    _position = p;
+    notifyListeners();
+  }
+
+  void resetPosition() {
+    _position = Duration.zero;
+    notifyListeners();
+  }
+
+  void resetDuration() {
+    _duration = Duration.zero;
+    notifyListeners();
+  }
+
+  void resetAllDurationAndPosition() {
+    _position = Duration.zero;
+    _duration = Duration.zero;
+    notifyListeners();
+  }
+
+  Future<void> streamAudio(String url) async {
+    try {
+      await _audioPlayer.setSourceUrl(url);
+      await _audioPlayer.resume();
+      _isPlaying = true;
+      notifyListeners();
+    } catch (e) {
+      print('Error streaming audio: $e');
+      _isPlaying = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> pauseAudio() async {
+    await _audioPlayer.pause();
+    _isPlaying = false;
+    notifyListeners();
+  }
+
+  Future<void> playAudio() async {
+    await _audioPlayer.resume();
+    _isPlaying = true;
+    notifyListeners();
+  }
+
+  Future<void> seekAudio(Duration position) async {
+    await _audioPlayer.seek(position);
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 }
 class MyApp extends StatelessWidget {

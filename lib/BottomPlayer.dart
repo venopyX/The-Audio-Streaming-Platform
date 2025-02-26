@@ -12,7 +12,6 @@ class BottomPlayer extends StatefulWidget {
 }
 
 class _BottomPlayerState extends State<BottomPlayer> {
-  bool _isInPlay = false;
   @override
   Widget build(BuildContext context) {
     final playing = Provider.of<Playing>(context, listen: false);
@@ -111,33 +110,14 @@ class _BottomPlayerState extends State<BottomPlayer> {
                         children: [
                           InkWell(
                             onTap: () {
-                              setState(() {
-                                _isInPlay = !_isInPlay;
-                              });
+                              playing.setIsPlaying(!playing.isPlaying);
                             },
                             child: SizedBox(
                               height: 20,
                               width: 20,
-                              child: (_isInPlay)
-                                  ? Image.asset(
-                                'images/icon_play.png',
-                                color: Colors.white,
-                              )
-                                  : Row(
-                                children: [
-                                  Container(
-                                    height: 17,
-                                    width: 5,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Container(
-                                    height: 17,
-                                    width: 5,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
+                              child: playing.isPlaying
+                                  ?Icon( Icons.pause)
+                                  : Icon(Icons.play_arrow),
                             ),
                           ),
                         ],
@@ -158,7 +138,8 @@ class _BottomPlayerState extends State<BottomPlayer> {
                   child: Slider(
                     activeColor: const Color.fromARGB(255, 230, 229, 229),
                     inactiveColor: Colors.grey,
-                    value: 0.5,
+
+                    value:playing.duration.inSeconds>0.0?playing.position.inSeconds / playing.duration.inSeconds:0.0,
                     onChanged: (onChanged) {},
                   ),
                 ),

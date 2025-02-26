@@ -16,6 +16,7 @@ class VideoComponent extends StatelessWidget {
       onTap:() {
         final playing = Provider.of<Playing>(context, listen: false);
         playing.assign(video);
+
           // Navigator.push(
           //   context,
           //   MaterialPageRoute(

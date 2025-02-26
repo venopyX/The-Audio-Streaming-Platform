@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_scrape_api/models/video.dart';
-import 'fetchYoutubeStreamUrl.dart';
 import 'YoutubeAudioStream.dart';
+import 'package:provider/provider.dart';
+import 'main.dart'; // Replace with the actual path
 class VideoComponent extends StatelessWidget {
   final Video video;
   VideoComponent({
@@ -13,12 +14,14 @@ class VideoComponent extends StatelessWidget {
     return
     GestureDetector(
       onTap:() {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => YoutubeAudioPlayer(videoId: video.videoId!), // Replace with your video ID
-            ),
-          );
+        final playing = Provider.of<Playing>(context, listen: false);
+        playing.assign(video);
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (context) => YoutubeAudioPlayer(videoId: video.videoId!), // Replace with your video ID
+          //   ),
+          // );
         // print(fetchYoutubeStreamUrl(video.videoId!));
         },
       child: Container(
@@ -47,7 +50,7 @@ class VideoComponent extends StatelessWidget {
                 Text(
                   video.title!,
                  overflow: TextOverflow.ellipsis,
-                  maxLines: 3,
+                  maxLines: 2,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

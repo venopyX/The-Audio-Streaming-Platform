@@ -1,13 +1,30 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:youtube_scrape_api/models/video.dart';
 import 'youtubepage.dart';
 import 'twitchpage.dart';
 import 'BottomPlayer.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+      MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => Playing()),
+          ],
+      child:const MyApp()));
 }
 
+class Playing with ChangeNotifier{
+  Video _video = Video();
+
+  Video get video => _video;
+
+  void assign(Video v){
+    _video = v;
+    notifyListeners();
+  }
+}
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -54,6 +71,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
 
   @override
   Widget build(BuildContext context) {
+    final playing = context.watch<Playing>();
     return Scaffold(
       extendBody: true,
       appBar: CustomAppBar(),
@@ -63,7 +81,8 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
           _pages[_selectedIndex],
 
           // BottomPlayer positioned above the bottom navigation
-          Positioned(
+          if(playing.video.title != null)
+            Positioned(
             left: 0,
             right: 0,
             bottom: kBottomNavigationBarHeight, // Position above the bottom nav

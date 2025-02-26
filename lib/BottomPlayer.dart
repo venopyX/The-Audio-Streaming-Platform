@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'YoutubeAudioStream.dart';
+import 'main.dart';
+import 'package:provider/provider.dart';
 
 
 class BottomPlayer extends StatefulWidget {
@@ -13,6 +15,7 @@ class _BottomPlayerState extends State<BottomPlayer> {
   bool _isInPlay = false;
   @override
   Widget build(BuildContext context) {
+    final playing = Provider.of<Playing>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Container(
@@ -63,23 +66,23 @@ class _BottomPlayerState extends State<BottomPlayer> {
                             height: 37,
                             width: 37,
                             decoration: BoxDecoration(
-                              image: const DecorationImage(
-                                image: AssetImage('assets/icons/music.png'),
+                              image:  DecorationImage(
+                                image: NetworkImage(playing.video.thumbnails![0].url!),
                                 fit: BoxFit.cover,
                               ),
                               borderRadius: BorderRadius.circular(3),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                           SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width - 190,
+                                width: MediaQuery.of(context).size.width - 140,
                                 height: 20,
-                                child: const Text(
-                                  "Enough is Enough",
+                                child:  Text(
+                                  playing.video.title!,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontFamily: "AM",
@@ -88,8 +91,8 @@ class _BottomPlayerState extends State<BottomPlayer> {
                                   ),
                                 ),
                               ),
-                              const Text(
-                                "Post Malone",
+                               Text(
+                                playing.video.channelName!,
                                 style: TextStyle(
                                   fontFamily: "AM",
                                   fontSize: 12,
@@ -102,7 +105,7 @@ class _BottomPlayerState extends State<BottomPlayer> {
                       ),
                     ),
                     SizedBox(
-                      width: 103,
+                      width: 40,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

@@ -5,6 +5,7 @@ import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
 import 'VideoComponent.dart';// Import Google Fonts
 
+
 final TextEditingController _searchController = TextEditingController();
 
 class YoutubeScreen extends StatefulWidget {
@@ -149,10 +150,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
     itemBuilder: (context, index) {
     final video = _videos[index];
     return VideoComponent(
-    url: video.thumbnails![0].url!, // Display video thumbnail
-    title: video.title!, // Display video title
-    channel: video.channelName!,
-        id:video.videoId!// Display channel name
+     video: video,
     );
     },
     )),

@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
-
+import 'package:youtube_scrape_api/models/video.dart';
+import 'fetchYoutubeStreamUrl.dart';
+import 'YoutubeAudioStream.dart';
 class VideoComponent extends StatelessWidget {
-  final String url;
-  final String title;
-  final String channel;
-  final String id;
+  final Video video;
   VideoComponent({
-    required this.url,
-    required this.title,
-    required this.channel,
-    required this.id
+    required this.video,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return
+    GestureDetector(
+      onTap:() {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => YoutubeAudioStream(videoId: video.videoId!), // Replace with your video ID
+            ),
+          );
+        // print(fetchYoutubeStreamUrl(video.videoId!));
+        },
+      child: Container(
       height: 100,
       decoration: BoxDecoration(
         color: Colors.black87, // Dark background
@@ -26,7 +33,7 @@ class VideoComponent extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(15),bottom: Radius.circular(15)), // Rounded top corners for image
             child: Image.network(
-              url,
+              video.thumbnails![0].url!,
               height: 100, // Adjust as needed
               width: double.infinity,
               fit: BoxFit.cover,
@@ -38,7 +45,7 @@ class VideoComponent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  video.title!,
                  overflow: TextOverflow.ellipsis,
                   maxLines: 3,
                   style: TextStyle(
@@ -47,7 +54,7 @@ class VideoComponent extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  channel,
+                  video.channelName!,
                   style: TextStyle(color: Colors.grey),
                 ),
               ],
@@ -55,6 +62,6 @@ class VideoComponent extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

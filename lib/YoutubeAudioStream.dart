@@ -60,7 +60,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
               max: playing.duration != null && playing.duration.inSeconds > 0
                   ? playing.duration.inSeconds.toDouble()
                   : 1.0, // Or some default max value
-              value: playing.position.inSeconds.toDouble(),
+              value: playing.position.inSeconds.toDouble() ,
               onChanged: (double value) {},
               thumbColor: Color(0x00000000),
             ),

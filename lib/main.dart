@@ -7,8 +7,24 @@ import 'youtubepage.dart';
 import 'twitchpage.dart';
 import 'BottomPlayer.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-void main() {
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notifications
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   runApp(
       MultiProvider(
           providers: [
@@ -28,7 +44,10 @@ class Playing with ChangeNotifier{
   Duration get position => _position;
   Video get video => _video;
   AudioPlayer get audioPlayer => _audioPlayer;
-  bool get isPlaying => _isPlaying; // Getter for isPlaying
+  bool get isPlaying => _isPlaying;
+  bool _isLooping = false;
+
+  bool get isLooping => _isLooping;
   void setIsPlaying(bool isit){
     if (isit){
       playAudio();
@@ -65,6 +84,18 @@ class Playing with ChangeNotifier{
       _isPlaying = state == PlayerState.playing;
       notifyListeners();
     });
+  }
+
+
+
+  Future<void> toggleLooping() async {
+    _isLooping = !_isLooping;
+    if (_isLooping) {
+      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    } else {
+      await _audioPlayer.setReleaseMode(ReleaseMode.release); // Or ReleaseMode.stop
+    }
+    notifyListeners();
   }
 
   void assign(Video v) async{
@@ -129,6 +160,47 @@ class Playing with ChangeNotifier{
 
   Future<void> seekAudio(Duration position) async {
     await _audioPlayer.seek(position);
+  }
+
+  Future<void> _updateNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+      'media_controls_channel', // Channel ID
+      'Media Controls', // Channel name
+      channelDescription: 'Media controls for audio playback',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+      enableLights: true,
+      enableVibration: false,
+      visibility: NotificationVisibility.public,
+      playSound: false,
+      ongoing: true,
+      actions: [
+      AndroidNotificationAction(
+      'pause',
+      'Pause',
+      icon: AndroidResource(name: 'pause'),
+      AndroidNotificationAction(
+          'play',
+          'Play',
+          icon: AndroidResource(name: 'play'),
+          AndroidNotificationAction(
+            'stop',
+            'Stop',
+            icon: AndroidResource(name: 'stop'),
+            ],
+          );
+
+          const NotificationDetails platformChannelSpecifics =
+          NotificationDetails(android: androidPlatformChannelSpecifics);
+
+      await flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      _video.title ?? 'Audio Playing', // Title
+      _video.channelName ?? 'Unknown Artist', // Content
+      platformChannelSpecifics,
+    );
   }
 
   @override

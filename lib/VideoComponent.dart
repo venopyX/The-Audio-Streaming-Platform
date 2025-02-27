@@ -16,7 +16,7 @@ class VideoComponent extends StatelessWidget {
     return GestureDetector(
       onTap: () {
 
-        playing.assign(video);
+        playing.assign(video,true);
       },
       child: Container(
         height: 100,

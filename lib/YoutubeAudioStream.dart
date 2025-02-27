@@ -12,6 +12,10 @@ class YoutubeAudioPlayer extends StatefulWidget {
 }
 
 class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
+  bool _isLiked = false; // Track like state
+  bool _isInPlaylist = false; // Track playlist state
+  bool _showLyrics = false; // Track lyrics visibility
+
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
@@ -19,9 +23,25 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Close the player
+          },
+        ),
         title: const Text('Now Playing'),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          // Queue Button
+          IconButton(
+            icon: Icon(Icons.queue_music, color: Colors.white),
+            onPressed: () {
+              // Open queue dialog or screen
+              _showQueue(context, playing);
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -92,6 +112,64 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                 ),
               ),
               SizedBox(height: 20),
+              // Like, Add to Playlist, and Lyrics Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _animatedButton(
+                    _isLiked ? Icons.favorite : Icons.favorite_border,
+                        () {
+                      setState(() {
+                        _isLiked = !_isLiked;
+                      });
+                      // Add logic to like/unlike the song
+                    },
+                    28,
+                    color: _isLiked ? Colors.red : Colors.white,
+                  ),
+                  SizedBox(width: 20),
+                  _animatedButton(
+                    _isInPlaylist ? Icons.playlist_add_check : Icons.playlist_add,
+                        () {
+                      setState(() {
+                        _isInPlaylist = !_isInPlaylist;
+                      });
+                      // Add logic to add/remove from playlist
+                    },
+                    28,
+                    color: _isInPlaylist ? Colors.green : Colors.white,
+                  ),
+                  SizedBox(width: 20),
+                  _animatedButton(
+                    Icons.lyrics,
+                        () {
+                      setState(() {
+                        _showLyrics = !_showLyrics; // Toggle lyrics visibility
+                      });
+                    },
+                    28,
+                    color: _showLyrics ? Colors.blue : Colors.white, // Highlight when active
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              // Lyrics Section (Conditional)
+              if (_showLyrics)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Here are the lyrics for the song...\n\n' // Replace with actual lyrics
+                        'Verse 1\n'
+                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n'
+                        'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n'
+                        'Qui officia deserunt mollit anim id est laborum.\n',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              SizedBox(height: 20),
               // Progress Bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -138,9 +216,9 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _controlButton(Icons.shuffle, () {}, 24),
+                  _animatedButton(Icons.shuffle, () {}, 24),
                   SizedBox(width: 16),
-                  _controlButton(Icons.skip_previous, playing.previous, 32),
+                  _animatedButton(Icons.skip_previous, playing.previous, 32),
                   SizedBox(width: 16),
                   GestureDetector(
                     onTap: () {
@@ -168,9 +246,11 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     ),
                   ),
                   SizedBox(width: 16),
-                  _controlButton(Icons.skip_next, playing.next, 32),
+                  _animatedButton(Icons.skip_next, playing.next, 32),
                   SizedBox(width: 16),
-                  _controlButton(Icons.repeat, () {}, 24),
+                  _animatedButton(playing.isLooping==0? Icons.repeat_rounded: playing.isLooping==1? Icons.repeat_one: Icons.repeat_rounded , () {
+                    playing.toggleLooping();
+                  }, 24,color:playing.isLooping==0? Colors.white: playing.isLooping==1? Colors.white: Colors.blue),
                 ],
               ),
             ],
@@ -180,9 +260,14 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
     );
   }
 
-  // Helper function to create control buttons with animations
-  Widget _controlButton(IconData icon, VoidCallback onPressed, double size) {
+  // Helper function to create animated buttons
+  Widget _animatedButton(IconData icon, VoidCallback onPressed, double size, {Color color = Colors.white}) {
+    bool _isButtonPressed = false;
+
     return GestureDetector(
+      onTapDown: (_) => setState(() => _isButtonPressed = true),
+      onTapUp: (_) => setState(() => _isButtonPressed = false),
+      onTapCancel: () => setState(() => _isButtonPressed = false),
       onTap: onPressed,
       child: AnimatedContainer(
         duration: Duration(milliseconds: 150),
@@ -192,12 +277,85 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
           shape: BoxShape.circle,
           color: Colors.white.withOpacity(0.1),
         ),
-        child: Icon(
-          icon,
-          size: size,
-          color: Colors.white,
+        child: ScaleTransition(
+          scale: Tween(begin: 1.0, end: 0.9).animate(
+            AlwaysStoppedAnimation(_isButtonPressed ? 0.9 : 1.0),
+          ),
+          child: Icon(
+            icon,
+            size: size,
+            color: color,
+          ),
         ),
       ),
+    );
+  }
+
+  // Show Queue Dialog with Currently Playing Highlighted
+  void _showQueue(BuildContext context, Playing playing) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.8),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Queue',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: playing.queue.length,
+                  itemBuilder: (context, index) {
+                    final video = playing.queue[index];
+                    final isCurrent = video.videoId == playing.video.videoId; // Check if this is the currently playing song
+                    return ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          video.thumbnails![0].url!,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      title: Text(
+                        video.title!,
+                        style: TextStyle(
+                          color: isCurrent ? Colors.blue : Colors.white, // Highlight current song
+                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      subtitle: Text(
+                        video.channelName!,
+                        style: TextStyle(
+                          color: isCurrent ? Colors.blue.shade200 : Colors.white70,
+                        ),
+                      ),
+                      onTap: () {
+                        playing.assign(video,false);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

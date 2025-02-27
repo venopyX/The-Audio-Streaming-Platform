@@ -26,7 +26,7 @@ class Playing with ChangeNotifier {
 
   final AudioPlayer _audioPlayer = AudioPlayer(); // Use just_audio's AudioPlayer
   bool _isPlaying = false;
-  bool _isLooping = false;
+  int _isLooping = 0;
 
   Duration get duration => _duration;
   Duration get position => _position;
@@ -34,7 +34,7 @@ class Playing with ChangeNotifier {
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
   List<Video> get queue => _queue;
-  bool get isLooping => _isLooping;
+  int get isLooping => _isLooping;
 
   Playing() {
     _initAudioPlayer();
@@ -83,20 +83,28 @@ class Playing with ChangeNotifier {
   }
 
   Future<void> toggleLooping() async {
-    _isLooping = !_isLooping;
-    if (_isLooping) {
-      _audioPlayer.setLoopMode(LoopMode.all); // Loop the entire queue
-    } else {
-      _audioPlayer.setLoopMode(LoopMode.off); // Disable looping
+      _isLooping = (_isLooping + 1)%3;
+    if (_isLooping ==0) {
+      _audioPlayer.setLoopMode(LoopMode.off);
+      // Loop the entire queue
+    } else if(_isLooping == 1) {
+      _audioPlayer.setLoopMode(LoopMode.one);
+    }else{
+      audioPlayer.setLoopMode(LoopMode.off);
     }
     notifyListeners();
   }
 
-  void assign(Video v) async {
-    _queue.clear();
-    _queue.add(v);
+  void assign(Video v,bool clear) async {
+    if (clear)
+      {
+        _queue.clear();
+        _queue.add(v);
+      }
+
+
     _video = v;
-    resetAllDurationAndPosition();
+    resetPosition();
     await pauseAudio();
     var url = await fetchYoutubeStreamUrl(v.videoId!);
     await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
@@ -124,23 +132,39 @@ class Playing with ChangeNotifier {
 
   void next() async {
     if (_queue.isNotEmpty) {
+      _isPlaying = false;
+      pauseAudio();
       int currentIndex = _queue.indexOf(_video);
       if (currentIndex < _queue.length - 1) {
         // Play the next video in the queue
+
+        resetPosition();
         _video = _queue[currentIndex + 1];
         var url = await fetchYoutubeStreamUrl(_video.videoId!);
         await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
         await playAudio();
-      } else {
-        // If it's the last video, stop playback or loop back to the first video
-        _isPlaying = false;
-        notifyListeners();
+      }else{
+        if (currentIndex == 0){
+        await seekAudio(Duration.zero);}
+        else if(_isLooping==2){
+          _video = _queue[0];
+          print("called innit");
+          var url = await fetchYoutubeStreamUrl(_video.videoId!);
+          await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+        }else{
+          return;
+        }
       }
+      _isPlaying=true;
+      playAudio();
     }
   }
 
   void previous() async {
     if (_queue.isNotEmpty) {
+      pauseAudio();
+      // resetAllDurationAndPosition();
+      _isPlaying=false;
       int currentPosition = _position.inSeconds;
       if (currentPosition > 3) {
         // If the current position is greater than 3 seconds, rewind to the start
@@ -152,13 +176,15 @@ class Playing with ChangeNotifier {
           _video = _queue[currentIndex - 1];
           var url = await fetchYoutubeStreamUrl(_video.videoId!);
           await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
-          await playAudio();
-        } else {
-          // If it's the first video, stop playback or loop back to the last video
-          _isPlaying = false;
-          notifyListeners();
+        }else{
+          await seekAudio(Duration.zero);
+
         }
+
       }
+      _isPlaying = true;
+      await playAudio();
+
     }
   }
 
@@ -184,6 +210,7 @@ class Playing with ChangeNotifier {
 
   void resetAllDurationAndPosition() {
     _position = Duration.zero;
+    notifyListeners();
     _duration = Duration.zero;
     notifyListeners();
   }

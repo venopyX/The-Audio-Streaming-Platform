@@ -101,6 +101,10 @@ class Playing with ChangeNotifier{
 
   void addToQueue(Video video) {
     _queue.add(video);
+    if(_video.title == null)
+      {
+        _video = video;
+      }
     print(_queue);
     notifyListeners();
   }

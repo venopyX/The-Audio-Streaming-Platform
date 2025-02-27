@@ -19,13 +19,16 @@ void main() {
       child:const MyApp()));
 }
 
+
+
 class Playing with ChangeNotifier {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   Video _video = Video();
   List<Video> _queue = [];
+  ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: []); // Initialize playlist
 
-  final AudioPlayer _audioPlayer = AudioPlayer(); // Use just_audio's AudioPlayer
+  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   int _isLooping = 0;
 
@@ -52,7 +55,6 @@ class Playing with ChangeNotifier {
   }
 
   void _initAudioPlayer() {
-    // Listen to duration changes
     _audioPlayer.durationStream.listen((duration) {
       if (duration != null) {
         _duration = duration;
@@ -60,20 +62,22 @@ class Playing with ChangeNotifier {
       }
     });
 
-    // Listen to position changes
     _audioPlayer.positionStream.listen((position) {
       _position = position;
       notifyListeners();
     });
 
-    // Listen to playback state changes
     _audioPlayer.playerStateStream.listen((playerState) {
       _isPlaying = playerState.playing;
       notifyListeners();
 
-      // Automatically play the next video when the current one ends
       if (playerState.processingState == ProcessingState.completed) {
-        if (_queue.isNotEmpty) {
+        if (_isLooping == 1) {
+          seekAudio(Duration.zero);
+          playAudio();
+        } else if (_isLooping == 2 && _queue.isNotEmpty) {
+          _audioPlayer.seek(Duration.zero, index: 0);
+        } else if (_queue.isNotEmpty) {
           next();
         } else {
           _isPlaying = false;
@@ -81,111 +85,80 @@ class Playing with ChangeNotifier {
         }
       }
     });
+
+    _audioPlayer.currentIndexStream.listen((index) {
+      if (index != null && index >= 0 && index < _queue.length) {
+        _video = _queue[index];
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> toggleLooping() async {
-      _isLooping = (_isLooping + 1)%3;
-    if (_isLooping ==0) {
-      _audioPlayer.setLoopMode(LoopMode.off);
-      // Loop the entire queue
-    } else if(_isLooping == 1) {
-      _audioPlayer.setLoopMode(LoopMode.one);
-    }else{
-      audioPlayer.setLoopMode(LoopMode.off);
+    _isLooping = (_isLooping + 1) % 3;
+    if (_isLooping == 0) {
+      await _audioPlayer.setLoopMode(LoopMode.off);
+    } else if (_isLooping == 1) {
+      await _audioPlayer.setLoopMode(LoopMode.one);
+    } else if (_isLooping == 2) {
+      await _audioPlayer.setLoopMode(LoopMode.all);
     }
     notifyListeners();
   }
 
-  void assign(Video v,bool clear) async {
-    if (clear)
-      {
-        _queue.clear();
-        _queue.add(v);
-      }
-
+  Future<void> assign(Video v, bool clear) async {
+    if (clear) {
+      _queue.clear();
+      _queue.add(v);
+    }
 
     _video = v;
     resetPosition();
     await pauseAudio();
+
     var url = await fetchYoutubeStreamUrl(v.videoId!);
-    await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+    final audioSource = AudioSource.uri(Uri.parse(url));
+    _playlist = ConcatenatingAudioSource(children: [audioSource]);
+    await _audioPlayer.setAudioSource(_playlist);
+
     await playAudio();
     notifyListeners();
   }
 
-  void addToQueue(Video video) {
+  Future<void> addToQueue(Video video) async {
     _queue.add(video);
     if (_video.title == null) {
       _video = video;
     }
+
+    var url = await fetchYoutubeStreamUrl(video.videoId!);
+    final audioSource = AudioSource.uri(Uri.parse(url));
+    await _playlist.add(audioSource);
+
     notifyListeners();
   }
 
-  void removeFromQueue(Video video) {
-    _queue.remove(video);
-    notifyListeners();
-  }
-
-  void clearQueue() {
+  Future<void> clearQueue() async {
     _queue.clear();
+    _playlist = ConcatenatingAudioSource(children: []);
+    await _audioPlayer.setAudioSource(_playlist);
     notifyListeners();
   }
 
-  void next() async {
+  Future<void> next() async {
     if (_queue.isNotEmpty) {
-      _isPlaying = false;
-      pauseAudio();
-      int currentIndex = _queue.indexOf(_video);
-      if (currentIndex < _queue.length - 1) {
-        // Play the next video in the queue
-
-        resetPosition();
-        _video = _queue[currentIndex + 1];
-        var url = await fetchYoutubeStreamUrl(_video.videoId!);
-        await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
-        await playAudio();
-      }else{
-        if (currentIndex == 0){
-        await seekAudio(Duration.zero);}
-        else if(_isLooping==2){
-          _video = _queue[0];
-          print("called innit");
-          var url = await fetchYoutubeStreamUrl(_video.videoId!);
-          await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
-        }else{
-          return;
-        }
-      }
-      _isPlaying=true;
-      playAudio();
+      await _audioPlayer.seekToNext();
     }
   }
 
-  void previous() async {
+  Future<void> previous() async {
     if (_queue.isNotEmpty) {
-      pauseAudio();
-      // resetAllDurationAndPosition();
-      _isPlaying=false;
       int currentPosition = _position.inSeconds;
       if (currentPosition > 3) {
-        // If the current position is greater than 3 seconds, rewind to the start
         await seekAudio(Duration.zero);
       } else {
-        int currentIndex = _queue.indexOf(_video);
-        if (currentIndex > 0) {
-          // Play the previous video in the queue
-          _video = _queue[currentIndex - 1];
-          var url = await fetchYoutubeStreamUrl(_video.videoId!);
-          await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
-        }else{
-          await seekAudio(Duration.zero);
-
-        }
-
+        await _audioPlayer.seekToPrevious();
       }
-      _isPlaying = true;
-      await playAudio();
-
     }
   }
 
@@ -249,6 +222,7 @@ class Playing with ChangeNotifier {
     super.dispose();
   }
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

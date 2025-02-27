@@ -246,7 +246,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     ),
                   ),
                   SizedBox(width: 16),
-                  _animatedButton(Icons.skip_next, playing.next, 32),
+                  _animatedButton(Icons.skip_next, () {playing.next();}, 32),
                   SizedBox(width: 16),
                   _animatedButton(playing.isLooping==0? Icons.repeat_rounded: playing.isLooping==1? Icons.repeat_one: Icons.repeat_rounded , () {
                     playing.toggleLooping();

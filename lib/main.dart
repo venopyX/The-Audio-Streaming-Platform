@@ -122,9 +122,7 @@ class Playing with ChangeNotifier {
         // Play the next video in the queue
         pauseAudio();
         resetAllDurationAndPosition();
-
         _video = _queue[currentIndex + 1];
-        resetAllDurationAndPosition();
         fetchYoutubeStreamUrl(_video.videoId!).then((url) {
           streamAudio(url);
         });

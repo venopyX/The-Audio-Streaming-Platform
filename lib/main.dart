@@ -22,6 +22,7 @@ class Playing with ChangeNotifier{
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   Video _video = Video();
+
   final AudioPlayer _audioPlayer = AudioPlayer(); // AudioPlayer moved here
   bool _isPlaying = false; // Added isPlaying state
 

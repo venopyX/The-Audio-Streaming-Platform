@@ -18,7 +18,6 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
@@ -28,22 +27,57 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('hello'),
-            Text('Duration: ${playing.duration.inSeconds} seconds'),
-            Text('Position: ${playing.position.inSeconds} seconds'),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Die for you',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'The Weeknd',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('${playing.position.inSeconds}'),
+                  Text('${playing.duration.inSeconds}'),
+                ],
+              ),
+            ),
             Slider(
               activeColor: Colors.white,
               value: playing.position.inSeconds.toDouble(),
               max: playing.duration.inSeconds.toDouble(),
-              onChanged: (double value) {
-
-              },
+              onChanged: (double value) {},
+              thumbColor: Color(0x00000000),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 IconButton(
-                  icon: Icon(playing.isPlaying ? Icons.pause : Icons.play_arrow),
+                  icon: Icon(Icons.shuffle, size: 32),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Icon(Icons.skip_next, size: 32),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Icon(playing.isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: 52),
                   onPressed: () {
                     if (playing.isPlaying) {
                       playing.pauseAudio();
@@ -51,6 +85,14 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       playing.playAudio(); // Replace with your audio URL
                     }
                   },
+                ),
+                IconButton(
+                  icon: Icon(Icons.skip_next, size: 32),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Icon(Icons.repeat, size: 32),
+                  onPressed: () {},
                 ),
               ],
             ),

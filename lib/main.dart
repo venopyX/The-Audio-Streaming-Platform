@@ -22,16 +22,20 @@ class Playing with ChangeNotifier{
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   Video _video = Video();
+  List<Video> _queue = [];
 
   final AudioPlayer _audioPlayer = AudioPlayer(); // AudioPlayer moved here
   bool _isPlaying = false; // Added isPlaying state
+  bool _isLooping = false;
+
 
   Duration get duration => _duration;
   Duration get position => _position;
   Video get video => _video;
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
-  bool _isLooping = false;
+  List<Video> get queue => _queue;
+
 
   bool get isLooping => _isLooping;
   void setIsPlaying(bool isit){
@@ -85,12 +89,61 @@ class Playing with ChangeNotifier{
   }
 
   void assign(Video v) async{
+    _queue.clear();
+    _queue.add(v);
     _video = v;
     resetAllDurationAndPosition();
     await pauseAudio();
     var url =await  fetchYoutubeStreamUrl(v.videoId!);
     streamAudio(url);
     notifyListeners();
+  }
+
+  void addToQueue(Video video) {
+    _queue.add(video);
+    print(_queue);
+    notifyListeners();
+  }
+  void removeFromQueue(Video video) {
+    _queue.remove(video);
+    notifyListeners();
+  }
+  void clearQueue() {
+    _queue.clear();
+    notifyListeners();
+  }
+  void next() {
+    if (_queue.isNotEmpty) {
+      int currentIndex = _queue.indexOf(_video!);
+      if (currentIndex < _queue.length - 1) {
+        _video = _queue[currentIndex + 1];
+      } else {
+        // Optionally loop back to the first video or stop
+        _video = _queue.first; // Loops back to the beginning.
+        //_currentVideo = null; // Stops playing.
+      }
+      notifyListeners();
+    }
+  }
+
+  void previous() {
+    if (_queue.isNotEmpty) {
+      int currentPosition = _position.inSeconds;
+      if (currentPosition > 3) { // Check if position is greater than 2 seconds
+        seekAudio(0.0 as Duration); // Rewind to the start
+      } else {
+        int currentIndex = _queue.indexOf(_video!);
+        if (currentIndex > 0) {
+          _video = _queue[currentIndex - 1];
+          seekAudio(0 as Duration); // Seek to the start of the new song
+        } else {
+          // Optionally loop back to the last video or do nothing
+          _video = _queue.last; // Loops back to the end
+          seekAudio(0 as Duration); // Seek to the start of the new song.
+        }
+      }
+      notifyListeners();
+    }
   }
 
   void updateDuration(Duration d) {

@@ -20,7 +20,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Audio Player')),
+      appBar: AppBar(title: const Text('Now Playing')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -28,7 +28,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Die for you',
+                playing.video.title!,
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.w500,
@@ -38,7 +38,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'The Weeknd',
+                playing.video.channelName!,
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w500,
@@ -57,8 +57,10 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
             ),
             Slider(
               activeColor: Colors.white,
+              max: playing.duration != null && playing.duration.inSeconds > 0
+                  ? playing.duration.inSeconds.toDouble()
+                  : 1.0, // Or some default max value
               value: playing.position.inSeconds.toDouble(),
-              max: playing.duration.inSeconds.toDouble(),
               onChanged: (double value) {},
               thumbColor: Color(0x00000000),
             ),
@@ -70,8 +72,10 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon: Icon(Icons.skip_next, size: 32),
-                  onPressed: () {},
+                  icon: Icon(Icons.skip_previous, size: 32),
+                  onPressed: () {
+                      playing.previous();
+                  },
                 ),
                 IconButton(
                   icon: Icon(playing.isPlaying ? Icons.pause : Icons.play_arrow,
@@ -86,7 +90,9 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                 ),
                 IconButton(
                   icon: Icon(Icons.skip_next, size: 32),
-                  onPressed: () {},
+                  onPressed: () {
+                    playing.next();
+                  },
                 ),
                 IconButton(
                   icon: Icon(Icons.repeat, size: 32),

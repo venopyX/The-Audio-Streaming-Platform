@@ -18,16 +18,15 @@ void main() {
       child:const MyApp()));
 }
 
-class Playing with ChangeNotifier{
+class Playing with ChangeNotifier {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   Video _video = Video();
   List<Video> _queue = [];
 
-  final AudioPlayer _audioPlayer = AudioPlayer(); // AudioPlayer moved here
-  bool _isPlaying = false; // Added isPlaying state
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
   bool _isLooping = false;
-
 
   Duration get duration => _duration;
   Duration get position => _position;
@@ -35,9 +34,11 @@ class Playing with ChangeNotifier{
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
   List<Video> get queue => _queue;
-
-
   bool get isLooping => _isLooping;
+
+  Playing() {
+    _initAudioPlayer();
+  }
   void setIsPlaying(bool isit){
     if (isit){
       playAudio();
@@ -48,11 +49,6 @@ class Playing with ChangeNotifier{
     _isPlaying = isit;
     notifyListeners();
   }
-
-  Playing() {
-    _initAudioPlayer();
-  }
-
   void _initAudioPlayer() {
     _audioPlayer.onDurationChanged.listen((Duration d) {
       _duration = d;
@@ -65,9 +61,13 @@ class Playing with ChangeNotifier{
     });
 
     _audioPlayer.onPlayerComplete.listen((_) {
-      _position = Duration.zero;
-      _isPlaying = false;
-      notifyListeners();
+      // Automatically play the next video when the current one ends
+      if (_queue.isNotEmpty) {
+        next();
+      } else {
+        _isPlaying = false;
+        notifyListeners();
+      }
     });
 
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
@@ -76,77 +76,88 @@ class Playing with ChangeNotifier{
     });
   }
 
-
-
   Future<void> toggleLooping() async {
     _isLooping = !_isLooping;
     if (_isLooping) {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
     } else {
-      await _audioPlayer.setReleaseMode(ReleaseMode.release); // Or ReleaseMode.stop
+      await _audioPlayer.setReleaseMode(ReleaseMode.release);
     }
     notifyListeners();
   }
 
-  void assign(Video v) async{
+  void assign(Video v) async {
     _queue.clear();
     _queue.add(v);
     _video = v;
     resetAllDurationAndPosition();
     await pauseAudio();
-    var url =await  fetchYoutubeStreamUrl(v.videoId!);
+    var url = await fetchYoutubeStreamUrl(v.videoId!);
     streamAudio(url);
     notifyListeners();
   }
 
   void addToQueue(Video video) {
     _queue.add(video);
-    if(_video.title == null)
-      {
-        _video = video;
-      }
-    print(_queue);
+    if (_video.title == null) {
+      _video = video;
+    }
     notifyListeners();
   }
+
   void removeFromQueue(Video video) {
     _queue.remove(video);
     notifyListeners();
   }
+
   void clearQueue() {
     _queue.clear();
     notifyListeners();
   }
+
   void next() {
     if (_queue.isNotEmpty) {
-      int currentIndex = _queue.indexOf(_video!);
+      int currentIndex = _queue.indexOf(_video);
       if (currentIndex < _queue.length - 1) {
+        // Play the next video in the queue
+        pauseAudio();
+        resetAllDurationAndPosition();
+
         _video = _queue[currentIndex + 1];
+        resetAllDurationAndPosition();
+        fetchYoutubeStreamUrl(_video.videoId!).then((url) {
+          streamAudio(url);
+        });
       } else {
-        // Optionally loop back to the first video or stop
-        _video = _queue.first; // Loops back to the beginning.
-        //_currentVideo = null; // Stops playing.
+        // If it's the last video, stop playback or loop back to the first video
+        _isPlaying = false;
+        notifyListeners();
       }
-      notifyListeners();
     }
   }
 
   void previous() {
+    print(queue);
     if (_queue.isNotEmpty) {
       int currentPosition = _position.inSeconds;
-      if (currentPosition > 3) { // Check if position is greater than 2 seconds
-        seekAudio(0.0 as Duration); // Rewind to the start
+      if (currentPosition > 3) {
+        // If the current position is greater than 3 seconds, rewind to the start
+        seekAudio(Duration.zero);
       } else {
-        int currentIndex = _queue.indexOf(_video!);
+        int currentIndex = _queue.indexOf(_video);
         if (currentIndex > 0) {
+          // Play the previous video in the queue
           _video = _queue[currentIndex - 1];
-          seekAudio(0 as Duration); // Seek to the start of the new song
+          resetAllDurationAndPosition();
+          fetchYoutubeStreamUrl(_video.videoId!).then((url) {
+            streamAudio(url);
+          });
         } else {
-          // Optionally loop back to the last video or do nothing
-          _video = _queue.last; // Loops back to the end
-          seekAudio(0 as Duration); // Seek to the start of the new song.
+          // If it's the first video, stop playback or loop back to the last video
+          _isPlaying = false;
+          notifyListeners();
         }
       }
-      notifyListeners();
     }
   }
 

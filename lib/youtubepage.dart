@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
 import 'VideoComponent.dart';// Import Google Fonts
+import 'thumbnailUtils.dart';
 
 
 final TextEditingController _searchController = TextEditingController();
@@ -31,8 +32,14 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
     });
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     List<Video> videos = await youtubeDataApi.fetchTrendingVideo();
+    List<Video> processedVideos = [];
+    for(var videoData in videos){
+      Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
+      processedVideos.add(videoWithHighestThumbnail);
+    }
+
     setState(() {
-      _videos = videos;
+      _videos = processedVideos;
       _isLoading = false;// Update the state with fetched videos
     });
   }
@@ -44,8 +51,13 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
     List videos = await youtubeDataApi.fetchSearchVideo(_searchController.text);
     List<Video> temp = videos.whereType<Video>().toList(); // Use whereType for conciseness
 
+    List<Video> processedVideos = [];
+    for(var videoData in videos){
+      Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
+      processedVideos.add(videoWithHighestThumbnail);
+    }
     setState(() {
-      _videos = temp;
+      _videos = processedVideos;
       _isLoading = false;// Update _videos with the filtered list
     });
   }

@@ -6,7 +6,7 @@ import 'package:youtube_scrape_api/models/video.dart';
 import 'youtubepage.dart';
 import 'twitchpage.dart';
 import 'BottomPlayer.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 
 
 void main() {
@@ -24,7 +24,7 @@ class Playing with ChangeNotifier {
   Video _video = Video();
   List<Video> _queue = [];
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer = AudioPlayer(); // Use just_audio's AudioPlayer
   bool _isPlaying = false;
   bool _isLooping = false;
 
@@ -39,49 +39,55 @@ class Playing with ChangeNotifier {
   Playing() {
     _initAudioPlayer();
   }
-  void setIsPlaying(bool isit){
-    if (isit){
+
+  void setIsPlaying(bool isit) {
+    if (isit) {
       playAudio();
-    }
-    else{
+    } else {
       pauseAudio();
     }
     _isPlaying = isit;
     notifyListeners();
   }
+
   void _initAudioPlayer() {
-    _audioPlayer.onDurationChanged.listen((Duration d) {
-      _duration = d;
-      notifyListeners();
-    });
-
-    _audioPlayer.onPositionChanged.listen((Duration p) {
-      _position = p;
-      notifyListeners();
-    });
-
-    _audioPlayer.onPlayerComplete.listen((_) {
-      // Automatically play the next video when the current one ends
-      if (_queue.isNotEmpty) {
-        next();
-      } else {
-        _isPlaying = false;
+    // Listen to duration changes
+    _audioPlayer.durationStream.listen((duration) {
+      if (duration != null) {
+        _duration = duration;
         notifyListeners();
       }
     });
 
-    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      _isPlaying = state == PlayerState.playing;
+    // Listen to position changes
+    _audioPlayer.positionStream.listen((position) {
+      _position = position;
       notifyListeners();
+    });
+
+    // Listen to playback state changes
+    _audioPlayer.playerStateStream.listen((playerState) {
+      _isPlaying = playerState.playing;
+      notifyListeners();
+
+      // Automatically play the next video when the current one ends
+      if (playerState.processingState == ProcessingState.completed) {
+        if (_queue.isNotEmpty) {
+          next();
+        } else {
+          _isPlaying = false;
+          notifyListeners();
+        }
+      }
     });
   }
 
   Future<void> toggleLooping() async {
     _isLooping = !_isLooping;
     if (_isLooping) {
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+      _audioPlayer.setLoopMode(LoopMode.all); // Loop the entire queue
     } else {
-      await _audioPlayer.setReleaseMode(ReleaseMode.release);
+      _audioPlayer.setLoopMode(LoopMode.off); // Disable looping
     }
     notifyListeners();
   }
@@ -93,7 +99,8 @@ class Playing with ChangeNotifier {
     resetAllDurationAndPosition();
     await pauseAudio();
     var url = await fetchYoutubeStreamUrl(v.videoId!);
-    streamAudio(url);
+    await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+    await playAudio();
     notifyListeners();
   }
 
@@ -115,17 +122,15 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  void next() {
+  void next() async {
     if (_queue.isNotEmpty) {
       int currentIndex = _queue.indexOf(_video);
       if (currentIndex < _queue.length - 1) {
         // Play the next video in the queue
-        pauseAudio();
-        resetAllDurationAndPosition();
         _video = _queue[currentIndex + 1];
-        fetchYoutubeStreamUrl(_video.videoId!).then((url) {
-          streamAudio(url);
-        });
+        var url = await fetchYoutubeStreamUrl(_video.videoId!);
+        await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+        await playAudio();
       } else {
         // If it's the last video, stop playback or loop back to the first video
         _isPlaying = false;
@@ -134,22 +139,20 @@ class Playing with ChangeNotifier {
     }
   }
 
-  void previous() {
-    print(queue);
+  void previous() async {
     if (_queue.isNotEmpty) {
       int currentPosition = _position.inSeconds;
       if (currentPosition > 3) {
         // If the current position is greater than 3 seconds, rewind to the start
-        seekAudio(Duration.zero);
+        await seekAudio(Duration.zero);
       } else {
         int currentIndex = _queue.indexOf(_video);
         if (currentIndex > 0) {
           // Play the previous video in the queue
           _video = _queue[currentIndex - 1];
-          resetAllDurationAndPosition();
-          fetchYoutubeStreamUrl(_video.videoId!).then((url) {
-            streamAudio(url);
-          });
+          var url = await fetchYoutubeStreamUrl(_video.videoId!);
+          await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+          await playAudio();
         } else {
           // If it's the first video, stop playback or loop back to the last video
           _isPlaying = false;
@@ -187,10 +190,8 @@ class Playing with ChangeNotifier {
 
   Future<void> streamAudio(String url) async {
     try {
-      await _audioPlayer.setSourceUrl(url);
-      await _audioPlayer.resume();
-      _isPlaying = true;
-      notifyListeners();
+      await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+      await playAudio();
     } catch (e) {
       print('Error streaming audio: $e');
       _isPlaying = false;
@@ -205,7 +206,7 @@ class Playing with ChangeNotifier {
   }
 
   Future<void> playAudio() async {
-    await _audioPlayer.resume();
+    await _audioPlayer.play();
     _isPlaying = true;
     notifyListeners();
   }

@@ -7,24 +7,9 @@ import 'youtubepage.dart';
 import 'twitchpage.dart';
 import 'BottomPlayer.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
 
 
-void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize notifications
-  const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+void main() {
   runApp(
       MultiProvider(
           providers: [
@@ -160,47 +145,6 @@ class Playing with ChangeNotifier{
 
   Future<void> seekAudio(Duration position) async {
     await _audioPlayer.seek(position);
-  }
-
-  Future<void> _updateNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
-      'media_controls_channel', // Channel ID
-      'Media Controls', // Channel name
-      channelDescription: 'Media controls for audio playback',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: false,
-      enableLights: true,
-      enableVibration: false,
-      visibility: NotificationVisibility.public,
-      playSound: false,
-      ongoing: true,
-      actions: [
-      AndroidNotificationAction(
-      'pause',
-      'Pause',
-      icon: AndroidResource(name: 'pause'),
-      AndroidNotificationAction(
-          'play',
-          'Play',
-          icon: AndroidResource(name: 'play'),
-          AndroidNotificationAction(
-            'stop',
-            'Stop',
-            icon: AndroidResource(name: 'stop'),
-            ],
-          );
-
-          const NotificationDetails platformChannelSpecifics =
-          NotificationDetails(android: androidPlatformChannelSpecifics);
-
-      await flutterLocalNotificationsPlugin.show(
-      0, // Notification ID
-      _video.title ?? 'Audio Playing', // Title
-      _video.channelName ?? 'Unknown Artist', // Content
-      platformChannelSpecifics,
-    );
   }
 
   @override

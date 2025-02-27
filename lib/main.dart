@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'youtubepage.dart';
-import 'twitchpage.dart';
+import 'watchLater.dart';
 import 'BottomPlayer.dart';
 import 'package:just_audio/just_audio.dart';
 
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
       MultiProvider(
           providers: [
@@ -283,7 +284,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
     YoutubeScreen(),
-    TwitchScreen(),
+    WatchLaterScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -333,8 +334,8 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
                   label: 'YouTube',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.live_tv),
-                  label: 'Twitch',
+                  icon: Icon(Icons.watch_later),
+                  label: 'Watch Later',
                 ),
               ],
             ),

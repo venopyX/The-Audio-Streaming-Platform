@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
-import 'VideoComponent.dart';// Import Google Fonts
+import 'VideoComponent.dart';
 import 'thumbnailUtils.dart';
-
+import 'package:shimmer/shimmer.dart';
 
 final TextEditingController _searchController = TextEditingController();
 
@@ -15,10 +14,10 @@ class YoutubeScreen extends StatefulWidget {
   @override
   _YoutubeScreenState createState() => _YoutubeScreenState();
 }
+
 class _YoutubeScreenState extends State<YoutubeScreen> {
   List<Video> _videos = [];
   bool _isLoading = false;
-  // Store fetched videos
 
   @override
   void initState() {
@@ -28,147 +27,132 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
 
   void fetchTrendingYoutube() async {
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     List<Video> videos = await youtubeDataApi.fetchTrendingVideo();
     List<Video> processedVideos = [];
-    for(var videoData in videos){
+    for (var videoData in videos) {
       Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
 
     setState(() {
       _videos = processedVideos;
-      _isLoading = false;// Update the state with fetched videos
+      _isLoading = false;
     });
   }
-  void searchYoutube() async{
+
+  void searchYoutube(String query) async {
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
-    List videos = await youtubeDataApi.fetchSearchVideo(_searchController.text);
-    List<Video> temp = videos.whereType<Video>().toList(); // Use whereType for conciseness
+    List videos = await youtubeDataApi.fetchSearchVideo(query);
+    List<Video> temp = videos.whereType<Video>().toList();
 
     List<Video> processedVideos = [];
-    for(var videoData in videos){
+    for (var videoData in videos) {
       Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
     setState(() {
       _videos = processedVideos;
-      _isLoading = false;// Update _videos with the filtered list
+      _isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Column(
-          children: [
-      // Search bar at the top
-      Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(50.0), // Rounded corners
-            border: Border.all(
-              color: Colors.black.withOpacity(1), // Dark border
-              width: 1.0, // Border width
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                hintStyle: TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: Colors.grey[900],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                  child: SvgPicture.asset(
+                    'assets/icons/youtube.svg',
+                    height: 20,
+                    color: Colors.white,
+                  ),
+                ),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_searchController.text.isNotEmpty)
+                      IconButton(
+                        icon: Icon(Icons.clear, color: Colors.white),
+                        onPressed: () {
+                          _searchController.clear();
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() {});
+                            }
+                          });
+                        },
+                      ),
+                    IconButton(
+                      icon: Icon(Icons.search, color: Colors.white),
+                      onPressed: () {
+                        searchYoutube(_searchController.text);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              style: TextStyle(color: Colors.white),
+              onChanged: (text) {
+                setState(() {});
+              },
+              onSubmitted: (query) {
+                searchYoutube(_searchController.text);
+              },
             ),
-            boxShadow: [
-        BoxShadow(
-        color: Colors.black.withOpacity(1),
-        blurRadius: 10,
-        spreadRadius: 2,
-        offset: const Offset(0, 4)), // Subtle shadow
+          ),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 20.0,
+              ),
+              padding: EdgeInsets.all(16),
+              itemCount: _isLoading ? 10 : _videos.length, // Show shimmer placeholders when loading
+              itemBuilder: (context, index) {
+                if (_isLoading) {
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[800]!,
+                    highlightColor: Colors.grey[700]!,
+                    child: Container(
+                      height: 100, // Adjust shimmer item height
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  );
+                } else {
+                  final video = _videos[index];
+                  return VideoComponent(video: video);
+                }
+              },
+            ),
+          ),
         ],
       ),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.transparent, // Transparent fill to match the container
-          hintText: 'Search Youtube',
-          hintStyle: GoogleFonts.roboto( // Apply Google Font
-            color: Colors.grey, // Light grey hint text
-            fontSize: 16,
-          ),
-
-          prefixIcon: IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/youtube.svg',
-              color: Colors.black87,
-              height: 24,
-              width: 24,
-              semanticsLabel: 'Youtube',
-            ),
-            onPressed: () {
-            },
-          ),
-          suffixIcon: Row(
-            mainAxisSize: MainAxisSize.min, // Ensure the row takes minimal space
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.clear,
-                  color: Colors.black87, // Grey clear icon
-                ),
-                onPressed: () => _searchController.clear(),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.search,
-                  color: Colors.black87, // Grey search icon
-                ),
-                onPressed: () {
-                  // Perform the search action here
-                  searchYoutube();
-                },
-              ),
-            ],
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30.0), // Rounded corners
-            borderSide: BorderSide.none, // No border
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 16.0,
-            horizontal: 20.0,
-          ),
-        ),
-        style: GoogleFonts.roboto( // Apply Google Font
-          color: Colors.black, // Black text color
-          fontSize: 16,
-        ),
-      ),
-    ),
-    ),
-    // Display trending video
-
-    Expanded(
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Colors.white,)) // Loading indicator
-            :GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // 2 columns
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 20.0,
-
-      ),
-    itemCount: _videos.length,
-    itemBuilder: (context, index) {
-    final video = _videos[index];
-    return VideoComponent(
-     video: video,
-    );
-    },
-    )),
-    ],
-    ),
     );
   }
 }
-

@@ -116,6 +116,8 @@ class VideoComponent extends StatelessWidget {
                   ),
                   Text(
                     video.channelName!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: TextStyle(color: Colors.grey),
                   ),
                 ],

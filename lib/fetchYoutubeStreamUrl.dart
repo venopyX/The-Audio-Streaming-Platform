@@ -15,7 +15,7 @@ Future<String> fetchYoutubeStreamUrl(String id) async{
   return audio.url.toString();
 }
 
-Future<List<ClosedCaption>?> fetchYoutubeClosedCaptions(String id) async{
+Future<List<ClosedCaption>> fetchYoutubeClosedCaptions(String id) async{
   var yt = YoutubeExplode();
 
   var trackManifest = await yt.videos.closedCaptions.getManifest(id);
@@ -27,13 +27,8 @@ Future<List<ClosedCaption>?> fetchYoutubeClosedCaptions(String id) async{
     var track = await yt.videos.closedCaptions.get(trackInfo.first);
     var captions = track.captions;
     return captions;
-    print(getCaptionAtTime(track.captions, Duration(seconds: 10)));
   }
-  return null;
-  // // Get the caption displayed at 1:01
-  // var caption = track.getByTime(Duration(seconds: 61));
-  // var text = caption?.text; // "And the game was afoot."
-  return null;
+  return [];
 
 }
  String getCaptionAtTime(List<ClosedCaption> captions, Duration time) {

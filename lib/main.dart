@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:audiofy/fetchYoutubeStreamUrl.dart';
+import 'fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytex;
@@ -93,7 +93,7 @@ class Playing with ChangeNotifier {
     _audioPlayer.currentIndexStream.listen((index) async {
       if (index != null && index >= 0 && index < _queue.length) {
         _video = _queue[index];
-        captions = (await fetchYoutubeClosedCaptions(_video.videoId!))!;// Sync _video with the current track
+        captions = (await fetchYoutubeClosedCaptions(_video.videoId!));// Sync _video with the current track
         notifyListeners();
       }
     });

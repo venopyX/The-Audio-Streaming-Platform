@@ -4,11 +4,21 @@ import 'package:localstore/localstore.dart';
 final db = Localstore.instance;
 
 Future<List<Video>> getFavorites() async {
-  List<Video>watchLaterList = [];
+  List<Video>favoriteList = [];
   final favorites = await db.collection('favorites').get();
-
-  print(favorites);
-  return watchLaterList;
+  Iterable? values = favorites?.values;
+  for (final value in values!) {
+    Video video = Video(
+      videoId: value['videoId'],
+      duration: value['duration'],
+      title: value['title'],
+      channelName: value['channelName'],
+      views: value['views'],
+      uploadDate: value['uploadDate'],
+    );
+    favoriteList.add(video);
+  }
+  return favoriteList;
 }
 
 void saveToFavorites(Video video) {

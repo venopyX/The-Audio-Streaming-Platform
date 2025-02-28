@@ -15,34 +15,29 @@ class VideoComponent extends StatelessWidget {
     final playing = Provider.of<Playing>(context, listen: false);
     return GestureDetector(
       onTap: () {
-
-        playing.assign(video,true);
+        playing.assign(video, true);
       },
       child: Container(
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.black87, // Dark background
-          borderRadius: BorderRadius.circular(15), // Rounded corners
+          color: Colors.black87,
+          borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thumbnail with Overlapping Menu Button
             Stack(
               children: [
-                // Thumbnail Image
                 ClipRRect(
                   borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(15),
-                      bottom: Radius.circular(15)), // Rounded corners for image
+                      top: Radius.circular(15), bottom: Radius.circular(15)),
                   child: Image.network(
                     video.thumbnails![0].url!,
-                    height: 100, // Adjust as needed
+                    height: 100,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
                 ),
-                // Three-dot dropdown menu (positioned in the top-right corner)
                 Positioned(
                   top: -4,
                   right: -4,
@@ -50,10 +45,9 @@ class VideoComponent extends StatelessWidget {
                     icon: Icon(
                       Icons.more_vert,
                       color: Colors.white,
-                      size: 20, // Adjust size as needed
+                      size: 20,
                     ),
                     onSelected: (String value) {
-                      // Handle menu item selection
                       switch (value) {
                         case 'add_to_queue':
                           playing.addToQueue(video);
@@ -84,9 +78,28 @@ class VideoComponent extends StatelessWidget {
                     },
                   ),
                 ),
+                if (video.duration != null && video.duration!.isNotEmpty) // Check if duration is not null or empty
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        video.duration!, // Display the string duration directly
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
-            // Title and Channel Name
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(

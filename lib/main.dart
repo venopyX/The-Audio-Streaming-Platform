@@ -3,9 +3,9 @@ import 'package:audiofy/fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_scrape_api/models/video.dart';
-import 'youtubepage.dart';
-import 'watchLater.dart';
-import 'BottomPlayer.dart';
+import 'youtubePage.dart';
+import 'favoritePage.dart';
+import 'bottomPlayer.dart';
 import 'package:just_audio/just_audio.dart';
 
 
@@ -280,7 +280,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
     YoutubeScreen(),
-    WatchLaterScreen(),
+    FavoriteScreen(),
   ];
 
   void _onItemTapped(int index) {

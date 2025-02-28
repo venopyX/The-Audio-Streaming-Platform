@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
-import 'FavoriteUtils.dart';
+import 'favoriteUtils.dart';
 
 class YoutubeAudioPlayer extends StatefulWidget {
   final String videoId;

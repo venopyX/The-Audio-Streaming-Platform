@@ -1,0 +1,2 @@
+/Users/brooksolomon/projects/audiofy/android/app/.cxx/RelWithDebInfo/6y725ut7/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/brooksolomon/projects/audiofy/android/app/.cxx/RelWithDebInfo/6y725ut7/arm64-v8a/CMakeFiles/rebuild_cache.dir

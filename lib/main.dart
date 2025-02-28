@@ -88,7 +88,7 @@ class Playing with ChangeNotifier {
 
     _audioPlayer.currentIndexStream.listen((index) {
       if (index != null && index >= 0 && index < _queue.length) {
-        _video = _queue[index];
+        _video = _queue[index]; // Sync _video with the current track
         notifyListeners();
       }
     });
@@ -126,28 +126,50 @@ class Playing with ChangeNotifier {
   }
 
   Future<void> addToQueue(Video video) async {
-    _queue.add(video);
+    _queue.add(video); // Add video to the queue
     if (_video.title == null) {
-      _video = video;
+      _video = video; // Set as current video if no video is playing
     }
 
     var url = await fetchYoutubeStreamUrl(video.videoId!);
     final audioSource = AudioSource.uri(Uri.parse(url));
-    await _playlist.add(audioSource);
+    await _playlist.add(audioSource); // Add audio source to the playlist
 
     notifyListeners();
   }
 
+  Future<void> removeFromQueue(Video video) async {
+    final index = _queue.indexOf(video);
+    if (index != -1) {
+      _queue.removeAt(index); // Remove video from the queue
+      await _playlist.removeAt(index); // Remove audio source from the playlist
+
+      // If the removed video was the current video, update _video
+      if (_video.videoId == video.videoId) {
+        if (_queue.isNotEmpty) {
+          _video = _queue[_audioPlayer.currentIndex ?? 0];
+        } else {
+          _video = Video(); // Reset _video if the queue is empty
+        }
+      }
+
+      notifyListeners();
+    }
+  }
+
   Future<void> clearQueue() async {
-    _queue.clear();
-    _playlist = ConcatenatingAudioSource(children: []);
+    _queue.clear(); // Clear the queue
+    _playlist = ConcatenatingAudioSource(children: []); // Clear the playlist
     await _audioPlayer.setAudioSource(_playlist);
+
+    _video = Video(); // Reset _video
     notifyListeners();
   }
 
   Future<void> next() async {
     if (_queue.isNotEmpty) {
       await _audioPlayer.seekToNext();
+      notifyListeners();
     }
   }
 

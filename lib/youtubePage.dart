@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
-import 'VideoComponent.dart';
+import 'videoComponent.dart';
 import 'thumbnailUtils.dart';
 import 'package:shimmer/shimmer.dart';
 

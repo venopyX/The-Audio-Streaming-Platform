@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
-import 'VideoComponent.dart'; // Import Google Fonts
+import 'videoComponent.dart'; // Import Google Fonts
 import 'thumbnailUtils.dart';
-import 'FavoriteUtils.dart';
+import 'favoriteUtils.dart';
 
-class WatchLaterScreen extends StatefulWidget {
-  const WatchLaterScreen({super.key});
+class FavoriteScreen extends StatefulWidget {
+  const FavoriteScreen({super.key});
 
   @override
-  _WatchLaterScreenState createState() => _WatchLaterScreenState();
+  _FavoriteScreenState createState() => _FavoriteScreenState();
 }
 
-class _WatchLaterScreenState extends State<WatchLaterScreen> {
+class _FavoriteScreenState extends State<FavoriteScreen> {
   List<Video> _videos = [];
   bool _isLoading = false;
   // Store fetched videos
@@ -21,7 +21,7 @@ class _WatchLaterScreenState extends State<WatchLaterScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWatchLater();
+    getFavorites();
   }
 
   void fetchWatchLater() async {

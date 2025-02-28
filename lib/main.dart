@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:audiofy/fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytex;
 import 'package:youtube_scrape_api/models/video.dart';
 import 'youtubepage.dart';
 import 'watchLater.dart';
@@ -27,6 +28,8 @@ class Playing with ChangeNotifier {
   Video _video = Video();
   List<Video> _queue = [];
   ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: []); // Initialize playlist
+  List<ytex.ClosedCaption> captions = [];
+  String currentCaption = "";
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
@@ -64,6 +67,7 @@ class Playing with ChangeNotifier {
 
     _audioPlayer.positionStream.listen((position) {
       _position = position;
+      currentCaption = getCaptionAtTime(captions, position);
       notifyListeners();
     });
 
@@ -86,9 +90,10 @@ class Playing with ChangeNotifier {
       }
     });
 
-    _audioPlayer.currentIndexStream.listen((index) {
+    _audioPlayer.currentIndexStream.listen((index) async {
       if (index != null && index >= 0 && index < _queue.length) {
-        _video = _queue[index]; // Sync _video with the current track
+        _video = _queue[index];
+        captions = (await fetchYoutubeClosedCaptions(_video.videoId!))!;// Sync _video with the current track
         notifyListeners();
       }
     });

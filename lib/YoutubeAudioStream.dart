@@ -1,3 +1,4 @@
+import 'package:audiofy/fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
@@ -146,7 +147,8 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     Icons.lyrics,
                         () {
                       setState(() {
-                        _showLyrics = !_showLyrics; // Toggle lyrics visibility
+                        _showLyrics = !_showLyrics;
+                        fetchYoutubeClosedCaptions(playing.video.videoId!);// Toggle lyrics visibility
                       });
                     },
                     28,
@@ -160,11 +162,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'Here are the lyrics for the song...\n\n' // Replace with actual lyrics
-                        'Verse 1\n'
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n'
-                        'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n'
-                        'Qui officia deserunt mollit anim id est laborum.\n',
+                    playing.currentCaption,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white70,

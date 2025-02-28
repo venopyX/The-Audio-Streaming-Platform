@@ -4,7 +4,7 @@ import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
 import 'VideoComponent.dart'; // Import Google Fonts
 import 'thumbnailUtils.dart';
-import 'watchUtils.dart';
+import 'FavoriteUtils.dart';
 
 class WatchLaterScreen extends StatefulWidget {
   const WatchLaterScreen({super.key});

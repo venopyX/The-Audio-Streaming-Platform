@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
+import 'FavoriteUtils.dart';
 
 class YoutubeAudioPlayer extends StatefulWidget {
   final String videoId;
@@ -121,6 +122,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                         () {
                       setState(() {
                         _isLiked = !_isLiked;
+                        saveToFavorites(playing.video);
                       });
                       // Add logic to like/unlike the song
                     },

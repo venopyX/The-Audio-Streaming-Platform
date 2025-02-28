@@ -34,6 +34,11 @@ class Playing with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   int _isLooping = 0;
+  bool _isShuffling = false;
+
+  bool get isShuffling => _isShuffling;
+
+
 
   Duration get duration => _duration;
   Duration get position => _position;
@@ -99,6 +104,11 @@ class Playing with ChangeNotifier {
     });
   }
 
+  Future<void> toggleShuffle() async {
+    _isShuffling = !_isShuffling;
+    await _audioPlayer.setShuffleModeEnabled(_isShuffling); // Use just_audio's shuffle
+    notifyListeners();
+  }
   Future<void> toggleLooping() async {
     _isLooping = (_isLooping + 1) % 3;
     if (_isLooping == 0) {

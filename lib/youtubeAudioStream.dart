@@ -216,7 +216,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _animatedButton(Icons.shuffle, () {}, 24),
+                  _animatedButton(Icons.shuffle, playing.toggleShuffle, 24, color: playing.isShuffling ? Colors.blue : Colors.white),
                   SizedBox(width: 16),
                   _animatedButton(Icons.skip_previous, playing.previous, 32),
                   SizedBox(width: 16),

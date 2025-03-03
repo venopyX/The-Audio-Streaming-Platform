@@ -309,36 +309,57 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
     final playing = context.watch<Playing>();
     return Scaffold(
       extendBody: true,
-      appBar: CustomAppBar(),
-      body: Stack(
-        children: [
-          // Main content
-          _pages[_selectedIndex],
-
-          // BottomPlayer positioned above the bottom navigation
-          if(playing.video.title != null)
-            Positioned(
-            left: 0,
-            right: 0,
-            bottom: kBottomNavigationBarHeight, // Position above the bottom nav
-            child: BottomPlayer(),
+      appBar: CustomAppBar(
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.deepPurple.shade800, Colors.black],
           ),
-        ],
+        ),
+        child: Stack(
+          children: [
+            // Main content with fade transition
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 300),
+              child: _pages[_selectedIndex],
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+            ),
+
+            // BottomPlayer positioned above the bottom navigation
+            if (playing.video.title != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: kBottomNavigationBarHeight, // Position above the bottom nav
+                child: BottomPlayer(),
+              ),
+          ],
+        ),
       ),
       bottomNavigationBar: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.5),
             child: BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: _onItemTapped,
               backgroundColor: Colors.transparent,
               elevation: 0,
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white.withOpacity(0.5),
+              selectedItemColor: Colors.deepPurpleAccent,
+              unselectedItemColor: Colors.grey,
+              selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.video_library),
@@ -366,16 +387,30 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Row(
         children: [
-          SizedBox(width: 10),
+          // App Logo
           Image.asset(
-            'assets/logo.png',
-            height: 200,
-            width: 130,
+            'assets/icon.png',
+            height: 40, // Adjusted for better proportions
+            width: 40,
+          ),
+          SizedBox(width: 10), // Spacing between logo and title
+          // App Title
+          Text(
+            "AudioBinge",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,
+      flexibleSpace: Container(
+
+      ),
+
     );
   }
 

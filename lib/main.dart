@@ -394,8 +394,8 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
                   label: 'YouTube',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.watch_later),
-                  label: 'Watch Later',
+                  icon: Icon(Icons.favorite_sharp),
+                  label: 'Favorites',
                 ),
               ],
             ),

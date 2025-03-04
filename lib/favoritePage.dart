@@ -1,10 +1,13 @@
+import 'package:audiobinge/favoriteUtils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
-import 'videoComponent.dart'; // Import Google Fonts
+import 'videoComponent.dart';
 import 'thumbnailUtils.dart';
-import 'favoriteUtils.dart';
+import 'package:shimmer/shimmer.dart';
+
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -16,70 +19,72 @@ class FavoriteScreen extends StatefulWidget {
 class _FavoriteScreenState extends State<FavoriteScreen> {
   List<Video> _videos = [];
   bool _isLoading = false;
-  // Store fetched videos
 
   @override
   void initState() {
     super.initState();
-    getFavorites();
+    fetchFavorites();
   }
 
-  void fetchWatchLater() async {
+  void fetchFavorites() async {
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
-    YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     List<Video> videos = await getFavorites();
-    List<Video> processedVideos = [];
-    for (var videoData in videos) {
-      Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
-      processedVideos.add(videoWithHighestThumbnail);
-    }
-
     setState(() {
-      _videos = processedVideos;
-      _isLoading = false; // Update the state with fetched videos
+      _videos = videos;
+      _isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Column(
         children: [
-          // Search bar at the top
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Watch Later',
-                  style: GoogleFonts.roboto(
-                      fontSize: 32, fontWeight: FontWeight.w500),
-                )),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Favorites',
+                style: GoogleFonts.roboto(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-          // Display trending video
-
           Expanded(
-              child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                      color: Colors.white,
-                    )) // Loading indicator
-                  : GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // 2 columns
-                        crossAxisSpacing: 10.0,
-                        mainAxisSpacing: 20.0,
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 20.0,
+              ),
+              padding: EdgeInsets.all(16),
+              itemCount: _isLoading ? 10 : _videos.length, // Show shimmer placeholders when loading
+              itemBuilder: (context, index) {
+                if (_isLoading) {
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[800]!,
+                    highlightColor: Colors.grey[700]!,
+                    child: Container(
+                      height: 100, // Adjust shimmer item height
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      itemCount: _videos.length,
-                      itemBuilder: (context, index) {
-                        final video = _videos[index];
-                        return VideoComponent(
-                          video: video,
-                        );
-                      },
-                    )),
+                    ),
+                  );
+                } else {
+                  final video = _videos[index];
+                  return VideoComponent(video: video);
+                }
+              },
+            ),
+          ),
         ],
       ),
     );

@@ -26,7 +26,6 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
   }
 
   void fetchTrendingYoutube() async {
-    if (!mounted) return; // Check if mounted before starting
     setState(() {
       _isLoading = true;
     });
@@ -37,17 +36,13 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
-
-    if (mounted) { // Check if mounted before setting state
-      setState(() {
-        _videos = processedVideos;
-        _isLoading = false;
-      });
-    }
+    setState(() {
+      _videos = processedVideos;
+      _isLoading = false;
+    });
   }
 
   void searchYoutube(String query) async {
-    if (!mounted) return; // Check if mounted before starting
     setState(() {
       _isLoading = true;
     });
@@ -60,17 +55,14 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
-    if(mounted){ //Check if mounted before setting state
-      setState(() {
-        _videos = processedVideos;
-        _isLoading = false;
-      });
-    }
+    setState(() {
+      _videos = processedVideos;
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // ... (rest of your build method)
     return Scaffold(
       backgroundColor: Colors.black,
       body: Column(
@@ -122,9 +114,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
               ),
               style: TextStyle(color: Colors.white),
               onChanged: (text) {
-                if (mounted) {
-                  setState(() {});
-                }
+                setState(() {});
               },
               onSubmitted: (query) {
                 searchYoutube(_searchController.text);

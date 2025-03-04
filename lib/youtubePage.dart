@@ -36,7 +36,6 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
-
     setState(() {
       _videos = processedVideos;
       _isLoading = false;

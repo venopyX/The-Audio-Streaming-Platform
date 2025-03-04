@@ -122,8 +122,8 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     _isLiked ? Icons.favorite : Icons.favorite_border,
                         () {
                       setState(() {
-                        _isLiked = !_isLiked;
-                        saveToFavorites(playing.video);
+                        _isLiked ? removeFavorites(playing.video) : saveToFavorites(playing.video);
+                        _isLiked = isFavorites(playing.video);
                       });
                       // Add logic to like/unlike the song
                     },

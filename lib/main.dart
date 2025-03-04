@@ -35,7 +35,9 @@ class Playing with ChangeNotifier {
   bool _isPlaying = false;
   int _isLooping = 0;
   bool _isShuffling = false;
+  bool _isloading = false;
 
+  bool get isloading => _isloading;
   bool get isShuffling => _isShuffling;
 
 
@@ -122,6 +124,8 @@ class Playing with ChangeNotifier {
   }
 
   Future<void> assign(Video v, bool clear) async {
+    _isloading = true;
+    notifyListeners();
     if (clear) {
       _queue.clear();
       _queue.add(v);
@@ -136,7 +140,10 @@ class Playing with ChangeNotifier {
     _playlist = ConcatenatingAudioSource(children: [audioSource]);
     await _audioPlayer.setAudioSource(_playlist);
 
+    _isloading = false;
+    notifyListeners();
     await playAudio();
+
     notifyListeners();
   }
 
@@ -183,19 +190,25 @@ class Playing with ChangeNotifier {
 
   Future<void> next() async {
     if (_queue.isNotEmpty) {
+      _isloading = true;
+      notifyListeners();
       await _audioPlayer.seekToNext();
+      _isloading = false;
       notifyListeners();
     }
   }
 
   Future<void> previous() async {
     if (_queue.isNotEmpty) {
+      _isloading = true;
       int currentPosition = _position.inSeconds;
       if (currentPosition > 3) {
         await seekAudio(Duration.zero);
       } else {
         await _audioPlayer.seekToPrevious();
       }
+      _isloading = false;
+      notifyListeners();
     }
   }
 

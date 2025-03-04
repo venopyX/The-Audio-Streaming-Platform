@@ -23,7 +23,7 @@ Future<List<Video>> getFavorites() async {
 
 void saveToFavorites(Video video) {
   final id = video.videoId;
-
+  print("added to favs");
   db.collection('favorites').doc(id).set({
     'videoId': video.videoId,
     'duration': video.duration,
@@ -45,7 +45,7 @@ bool isFavorites(Video video) {
     if (value == null) {
       return false;
     }
-    return value.isEmpty;
+    return value.isNotEmpty;
   });
   return false;
 }

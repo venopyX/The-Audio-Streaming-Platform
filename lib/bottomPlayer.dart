@@ -119,7 +119,10 @@ class _BottomPlayerState extends State<BottomPlayer> {
                         color: Colors.white.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: playing.isloading?SizedBox(height: 20,width: 20,child:CircularProgressIndicator(
+                        strokeWidth: 1,
+                        color: Colors.white,
+                      ),): Icon(
                         playing.isPlaying ? Icons.pause : Icons.play_arrow,
                         color: Colors.white,
                         size: 24,

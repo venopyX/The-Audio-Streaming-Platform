@@ -18,9 +18,12 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   bool _isInPlaylist = false; // Track playlist state
   bool _showLyrics = false; // Track lyrics visibility
 
+
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
+    _isLiked = isFavorites(playing.video);
+
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -122,8 +125,14 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     _isLiked ? Icons.favorite : Icons.favorite_border,
                         () {
                       setState(() {
-                        _isLiked = !_isLiked;
+                        if(!_isLiked){
                         saveToFavorites(playing.video);
+                        }else{
+                          removeFavorites(playing.video);
+                        }
+
+                        _isLiked = isFavorites(playing.video);
+                        print(_isLiked);
                       });
                       // Add logic to like/unlike the song
                     },
@@ -238,7 +247,25 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                           )
                         ],
                       ),
-                      child: Icon(
+                      child:playing.isloading?SizedBox(
+                        height: 60,
+                        width: 60,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(15.0), // Adjust the padding value as needed
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ): Icon(
                         playing.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
                         size: 72,
                         color: Colors.white,

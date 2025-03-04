@@ -231,7 +231,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   SizedBox(width: 16),
                   GestureDetector(
                     onTap: () {
-                      playing.isPlaying ? playing.pauseAudio() : playing.playAudio();
+                      playing.isPlaying ? playing.pause() : playing.play();
                     },
                     child: AnimatedContainer(
                       duration: Duration(milliseconds: 200),

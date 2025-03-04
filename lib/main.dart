@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:just_audio_background/just_audio_background.dart';
+
 import 'fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +12,13 @@ import 'bottomPlayer.dart';
 import 'package:just_audio/just_audio.dart';
 
 
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+  );
   runApp(
       MultiProvider(
           providers: [
@@ -56,9 +63,9 @@ class Playing with ChangeNotifier {
 
   void setIsPlaying(bool isit) {
     if (isit) {
-      playAudio();
+      play();
     } else {
-      pauseAudio();
+      pause();
     }
     _isPlaying = isit;
     notifyListeners();
@@ -85,7 +92,7 @@ class Playing with ChangeNotifier {
       if (playerState.processingState == ProcessingState.completed) {
         if (_isLooping == 1) {
           seekAudio(Duration.zero);
-          playAudio();
+          play();
         } else if (_isLooping == 2 && _queue.isNotEmpty) {
           _audioPlayer.seek(Duration.zero, index: 0);
         } else if (_queue.isNotEmpty) {
@@ -133,16 +140,24 @@ class Playing with ChangeNotifier {
 
     _video = v;
     resetPosition();
-    await pauseAudio();
+    await pause();
 
     var url = await fetchYoutubeStreamUrl(v.videoId!);
-    final audioSource = AudioSource.uri(Uri.parse(url));
+    final audioSource = AudioSource.uri(Uri.parse(url),
+      tag: MediaItem(
+        // Specify a unique ID for each media item:
+        id: v.videoId!,
+        // Metadata to display in the notification:
+        album: v.channelName,
+        title: v.title!,
+        artUri: Uri.parse(v.thumbnails![0].url!),
+      ),);
     _playlist = ConcatenatingAudioSource(children: [audioSource]);
     await _audioPlayer.setAudioSource(_playlist);
 
     _isloading = false;
     notifyListeners();
-    await playAudio();
+    await play();
 
     notifyListeners();
   }
@@ -242,7 +257,7 @@ class Playing with ChangeNotifier {
   Future<void> streamAudio(String url) async {
     try {
       await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
-      await playAudio();
+      await play();
     } catch (e) {
       print('Error streaming audio: $e');
       _isPlaying = false;
@@ -250,13 +265,13 @@ class Playing with ChangeNotifier {
     }
   }
 
-  Future<void> pauseAudio() async {
+  Future<void> pause() async {
     await _audioPlayer.pause();
     _isPlaying = false;
     notifyListeners();
   }
 
-  Future<void> playAudio() async {
+  Future<void> play() async {
     await _audioPlayer.play();
     _isPlaying = true;
     notifyListeners();

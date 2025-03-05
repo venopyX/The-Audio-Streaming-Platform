@@ -10,6 +10,7 @@ import 'youtubePage.dart';
 import 'favoritePage.dart';
 import 'bottomPlayer.dart';
 import 'package:just_audio/just_audio.dart';
+import 'youtubeAudioStream.dart';
 
 
 void main() async{
@@ -22,6 +23,7 @@ void main() async{
   runApp(
       MultiProvider(
           providers: [
+            ChangeNotifierProvider(create: (_) => LikeNotifier()),
             ChangeNotifierProvider(create: (_) => Playing()),
           ],
       child:const MyApp()));

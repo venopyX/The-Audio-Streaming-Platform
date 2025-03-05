@@ -1,13 +1,9 @@
 import 'package:audiobinge/favoriteUtils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_scrape_api/models/video.dart';
-import 'package:youtube_scrape_api/youtube_scrape_api.dart';
 import 'videoComponent.dart';
-import 'thumbnailUtils.dart';
 import 'package:shimmer/shimmer.dart';
-
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -57,31 +53,47 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             ),
           ),
           Expanded(
-            child: GridView.builder(
+            child: _isLoading
+                ? GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 10.0,
                 mainAxisSpacing: 20.0,
               ),
               padding: EdgeInsets.all(16),
-              itemCount: _isLoading ? 10 : _videos.length, // Show shimmer placeholders when loading
+              itemCount: 10, // Show 10 shimmer placeholders while loading
               itemBuilder: (context, index) {
-                if (_isLoading) {
-                  return Shimmer.fromColors(
-                    baseColor: Colors.grey[800]!,
-                    highlightColor: Colors.grey[700]!,
-                    child: Container(
-                      height: 100, // Adjust shimmer item height
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                return Shimmer.fromColors(
+                  baseColor: Colors.grey[800]!,
+                  highlightColor: Colors.grey[700]!,
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[800],
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  );
-                } else {
-                  final video = _videos[index];
-                  return VideoComponent(video: video);
-                }
+                  ),
+                );
+              },
+            )
+                : _videos.isEmpty
+                ? Center(
+              child: Text(
+                'No favorites yet.',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+                : GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 20.0,
+              ),
+              padding: EdgeInsets.all(16),
+              itemCount: _videos.length,
+              itemBuilder: (context, index) {
+                final video = _videos[index];
+                return VideoComponent(video: video);
               },
             ),
           ),

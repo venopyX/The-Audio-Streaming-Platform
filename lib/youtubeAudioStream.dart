@@ -4,6 +4,31 @@ import 'main.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'favoriteUtils.dart';
+import 'package:youtube_scrape_api/models/video.dart';
+
+// LikeNotifier provider
+class LikeNotifier extends ChangeNotifier {
+  bool _isLiked = false;
+  Video? _currentVideo;
+
+  bool get isLiked => _isLiked;
+
+  void setVideo(Video video) async {
+    _currentVideo = video;
+    _isLiked = await isFavorites(video);
+    notifyListeners();
+  }
+
+  void toggleLike() {
+    _isLiked = !_isLiked;
+    if (_isLiked) {
+      saveToFavorites(_currentVideo!);
+    } else {
+      removeFavorites(_currentVideo!);
+    }
+    notifyListeners();
+  }
+}
 
 class YoutubeAudioPlayer extends StatefulWidget {
   final String videoId;
@@ -14,13 +39,25 @@ class YoutubeAudioPlayer extends StatefulWidget {
 }
 
 class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
-  bool _isLiked = false; // Track like state
   bool _isInPlaylist = false; // Track playlist state
   bool _showLyrics = false; // Track lyrics visibility
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final playing = context.read<Playing>();
+      context.read<LikeNotifier>().setVideo(playing.video);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
+    final likeNotifier = context.watch<LikeNotifier>(); // Watch the LikeNotifier
+
+    // Set the current video in LikeNotifier
+    likeNotifier.setVideo(playing.video);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -35,11 +72,9 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // Queue Button
           IconButton(
             icon: Icon(Icons.queue_music, color: Colors.white),
             onPressed: () {
-              // Open queue dialog or screen
               _showQueue(context, playing);
             },
           ),
@@ -96,19 +131,17 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       playing.video.title!,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 24.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 1.2),
                     ),
                     SizedBox(height: 6),
                     Text(
                       playing.video.channelName!,
                       style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.white70,
-                      ),
+                          fontSize: 16.0,
+                          color: Colors.white70),
                     ),
                   ],
                 ),
@@ -118,18 +151,17 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _animatedButton(
-                    _isLiked ? Icons.favorite : Icons.favorite_border,
-                        () {
-                      setState(() {
-                        _isLiked ? removeFavorites(playing.video) : saveToFavorites(playing.video);
-                        _isLiked = isFavorites(playing.video);
-                      });
-                      // Add logic to like/unlike the song
-                    },
-                    28,
-                    color: _isLiked ? Colors.red : Colors.white,
-                  ),
+                  Consumer<LikeNotifier>(
+                      builder: (context, likeNotifier, child) {
+                        return _animatedButton(
+                          likeNotifier.isLiked ? Icons.favorite : Icons.favorite_border,
+                              () {
+                            likeNotifier.toggleLike();
+                          },
+                          28,
+                          color: likeNotifier.isLiked ? Colors.red : Colors.white,
+                        );
+                      }) ,
                   SizedBox(width: 20),
                   _animatedButton(
                     _isInPlaylist ? Icons.playlist_add_check : Icons.playlist_add,
@@ -137,7 +169,6 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       setState(() {
                         _isInPlaylist = !_isInPlaylist;
                       });
-                      // Add logic to add/remove from playlist
                     },
                     28,
                     color: _isInPlaylist ? Colors.green : Colors.white,
@@ -148,11 +179,11 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                         () {
                       setState(() {
                         _showLyrics = !_showLyrics;
-                        fetchYoutubeClosedCaptions(playing.video.videoId!);// Toggle lyrics visibility
+                        fetchYoutubeClosedCaptions(playing.video.videoId!);
                       });
                     },
                     28,
-                    color: _showLyrics ? Colors.blue : Colors.white, // Highlight when active
+                    color: _showLyrics ? Colors.blue : Colors.white,
                   ),
                 ],
               ),
@@ -164,9 +195,8 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   child: Text(
                     playing.currentCaption,
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                        fontSize: 16,
+                        color: Colors.white70),
                   ),
                 ),
               SizedBox(height: 20),
@@ -309,10 +339,9 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
               Text(
                 'Queue',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               SizedBox(height: 16),
               Expanded(
@@ -320,7 +349,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   itemCount: playing.queue.length,
                   itemBuilder: (context, index) {
                     final video = playing.queue[index];
-                    final isCurrent = video.videoId == playing.video.videoId; // Check if this is the currently playing song
+                    final isCurrent = video.videoId == playing.video.videoId;
                     return ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
@@ -334,15 +363,13 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       title: Text(
                         video.title!,
                         style: TextStyle(
-                          color: isCurrent ? Colors.blue : Colors.white, // Highlight current song
-                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                        ),
+                            color: isCurrent ? Colors.blue : Colors.white,
+                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal),
                       ),
                       subtitle: Text(
                         video.channelName!,
                         style: TextStyle(
-                          color: isCurrent ? Colors.blue.shade200 : Colors.white70,
-                        ),
+                            color: isCurrent ? Colors.blue.shade200 : Colors.white70),
                       ),
                       onTap: () {
                         playing.assign(video,false);

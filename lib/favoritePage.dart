@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'videoComponent.dart';
 import 'package:shimmer/shimmer.dart';
+import 'main.dart';
+import 'package:provider/provider.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -33,23 +35,49 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+    final playing = context.watch<Playing>();
     return Scaffold(
       backgroundColor: Colors.black,
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Favorites',
-                style: GoogleFonts.roboto(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Favorites',
+                  style: GoogleFonts.roboto(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
+                if (_videos.isNotEmpty)
+                  ElevatedButton.icon(
+                    onPressed:()=> playing.setQueue(_videos),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple, // Red color for the button
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    ),
+                    icon: Icon(Icons.play_arrow, color: Colors.white),
+                    label: Text(
+                      'Play All',
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           Expanded(

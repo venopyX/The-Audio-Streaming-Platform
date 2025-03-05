@@ -216,6 +216,19 @@ class Playing with ChangeNotifier {
     _video = Video(); // Reset _video
     notifyListeners();
   }
+  Future<void> setQueue(List<Video> videos) async{
+    if (videos.isNotEmpty) {
+      // Assign the first element
+      assign(videos.first,true);
+
+      // Add the remaining elements to the queue
+      for (int i = 1; i < videos.length; i++) {
+        addToQueue(videos[i]);
+      }
+    }
+
+    notifyListeners();
+  }
 
   Future<void> next() async {
     if (_queue.isNotEmpty) {

@@ -51,7 +51,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
     List<Video> temp = videos.whereType<Video>().toList();
 
     List<Video> processedVideos = [];
-    for (var videoData in videos) {
+    for (var videoData in temp) {
       Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }

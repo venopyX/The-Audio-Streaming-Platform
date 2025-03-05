@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'favoriteUtils.dart';
 import 'package:youtube_scrape_api/models/video.dart';
-
+import 'thumbnailUtils.dart';
+import 'package:marquee/marquee.dart';
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {
   bool _isLiked = false;
@@ -127,15 +128,8 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      playing.video.title!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1.2),
-                    ),
+                    SizedBox(height: 40,child: buildMarqueeVideoTitle(playing.video.title!))
+                    ,
                     SizedBox(height: 6),
                     Text(
                       playing.video.channelName!,
@@ -224,19 +218,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${playing.position.inMinutes}:${(playing.position.inSeconds % 60).toString().padLeft(2, '0')}',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          Text(
-                            '${playing.duration.inMinutes}:${(playing.duration.inSeconds % 60).toString().padLeft(2, '0')}',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
+                      child: buildTimeDisplay(playing.position, playing.duration)
                     ),
                   ],
                 ),

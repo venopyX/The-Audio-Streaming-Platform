@@ -455,7 +455,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           SizedBox(width: 10), // Spacing between logo and title
           // App Title
           Text(
-            "AudioBinge",
+            "The Audio Streaming Platform",
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,

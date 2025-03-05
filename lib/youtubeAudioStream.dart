@@ -162,17 +162,17 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                           color: likeNotifier.isLiked ? Colors.red : Colors.white,
                         );
                       }) ,
-                  SizedBox(width: 20),
-                  _animatedButton(
-                    _isInPlaylist ? Icons.playlist_add_check : Icons.playlist_add,
-                        () {
-                      setState(() {
-                        _isInPlaylist = !_isInPlaylist;
-                      });
-                    },
-                    28,
-                    color: _isInPlaylist ? Colors.green : Colors.white,
-                  ),
+                  // SizedBox(width: 20),
+                  // _animatedButton(
+                  //   _isInPlaylist ? Icons.playlist_add_check : Icons.playlist_add,
+                  //       () {
+                  //     setState(() {
+                  //       _isInPlaylist = !_isInPlaylist;
+                  //     });
+                  //   },
+                  //   28,
+                  //   color: _isInPlaylist ? Colors.green : Colors.white,
+                  // ),
                   SizedBox(width: 20),
                   _animatedButton(
                     Icons.lyrics,

@@ -66,14 +66,14 @@ class VideoComponent extends StatelessWidget {
                           value: 'add_to_queue',
                           child: Text('Add to Queue'),
                         ),
-                        PopupMenuItem<String>(
-                          value: 'add_to_playlist',
-                          child: Text('Add to Playlist'),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'share',
-                          child: Text('Share'),
-                        ),
+                        // PopupMenuItem<String>(
+                        //   value: 'add_to_playlist',
+                        //   child: Text('Add to Playlist'),
+                        // ),
+                        // PopupMenuItem<String>(
+                        //   value: 'share',
+                        //   child: Text('Share'),
+                        // ),
                       ];
                     },
                   ),

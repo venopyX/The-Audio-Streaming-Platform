@@ -38,7 +38,7 @@ class Playing with ChangeNotifier {
   List<Video> _queue = [];
   ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: []); // Initialize playlist
   List<ytex.ClosedCaption> captions = [];
-  String currentCaption = "";
+  String currentCaption = "no caption fo this media";
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
@@ -48,6 +48,7 @@ class Playing with ChangeNotifier {
 
   bool get isloading => _isloading;
   bool get isShuffling => _isShuffling;
+  ConcatenatingAudioSource get playlist => _playlist;
 
 
 
@@ -83,7 +84,11 @@ class Playing with ChangeNotifier {
 
     _audioPlayer.positionStream.listen((position) {
       _position = position;
-      currentCaption = getCaptionAtTime(captions, position);
+
+      if(captions.isNotEmpty) {
+        currentCaption = getCaptionAtTime(captions, position);
+      } else{
+        currentCaption = "No caption for this media";      }
       notifyListeners();
     });
 
@@ -164,14 +169,21 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addToQueue(Video video) async {
-    _queue.add(video); // Add video to the queue
+  Future<void> addToQueue(Video v) async {
+    _queue.add(v); // Add video to the queue
     if (_video.title == null) {
-      _video = video; // Set as current video if no video is playing
+      _video = v; // Set as current video if no video is playing
     }
 
-    var url = await fetchYoutubeStreamUrl(video.videoId!);
-    final audioSource = AudioSource.uri(Uri.parse(url));
+    var url = await fetchYoutubeStreamUrl(v.videoId!);
+    final audioSource = AudioSource.uri(Uri.parse(url),tag:MediaItem(
+      // Specify a unique ID for each media item:
+      id: v.videoId!,
+      // Metadata to display in the notification:
+      album: v.channelName,
+      title: v.title!,
+      artUri: Uri.parse(v.thumbnails![0].url!),
+    ) );
     await _playlist.add(audioSource); // Add audio source to the playlist
 
     notifyListeners();

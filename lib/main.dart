@@ -170,10 +170,13 @@ class Playing with ChangeNotifier {
   }
 
   Future<void> addToQueue(Video v) async {
-    _queue.add(v); // Add video to the queue
-    if (_video.title == null) {
-      _video = v; // Set as current video if no video is playing
+    if (_queue.isEmpty){
+      assign(v, true);
+      return;
     }
+
+    _queue.add(v); // Add video to the queue
+
 
     var url = await fetchYoutubeStreamUrl(v.videoId!);
     final audioSource = AudioSource.uri(Uri.parse(url),tag:MediaItem(
@@ -217,15 +220,16 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
   Future<void> setQueue(List<Video> videos) async{
+    await clearQueue();
+    _isloading = true;
+    notifyListeners();
     if (videos.isNotEmpty) {
-      // Assign the first element
-      assign(videos.first,true);
-
-      // Add the remaining elements to the queue
-      for (int i = 1; i < videos.length; i++) {
-        addToQueue(videos[i]);
+      for (var video in videos) {
+        addToQueue(video);
       }
     }
+    _isloading = false;
+
 
     notifyListeners();
   }

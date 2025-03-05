@@ -50,7 +50,24 @@ class VideoComponent extends StatelessWidget {
                     onSelected: (String value) {
                       switch (value) {
                         case 'add_to_queue':
+                          if(playing.queue.contains(video)){
+                            const snackdemo = SnackBar(
+                              content: Text('Already in Queue'),
+                              backgroundColor: Colors.white,
+                              elevation: 10,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(5),
+                            ); ScaffoldMessenger.of(context).showSnackBar(snackdemo);
+                          }
+                          else{
                           playing.addToQueue(video);
+                          const snackdemo = SnackBar(
+                            content: Text('Added to Queue'),
+                            backgroundColor: Colors.white,
+                            elevation: 10,
+                            behavior: SnackBarBehavior.floating,
+                            margin: EdgeInsets.all(5),
+                          ); ScaffoldMessenger.of(context).showSnackBar(snackdemo);}
                           break;
                         case 'add_to_playlist':
                           print('Add to Playlist');

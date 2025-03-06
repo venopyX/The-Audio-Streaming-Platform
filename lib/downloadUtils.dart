@@ -147,3 +147,40 @@ Future<bool> isDownloaded(MyVideo video) async {
     return false; // Return false in case of an error
   }
 }
+
+
+Future<bool> deleteDownload(MyVideo video) async {
+  final id = video.videoId;
+  try {
+    // Delete the document from Firestore
+    await db.collection('downloads').doc(id).delete();
+
+    // Delete the audio file
+    if (video.localaudio != null && video.localaudio!.isNotEmpty) {
+      File audioFile = File(video.localaudio!);
+      if (await audioFile.exists()) {
+        await audioFile.delete();
+        print("Audio file deleted: ${video.localaudio}");
+      } else {
+        print("Audio file not found: ${video.localaudio}");
+      }
+    }
+
+    // Delete the image file
+    if (video.localimage != null && video.localimage!.isNotEmpty) {
+      File imageFile = File(video.localimage!);
+      if (await imageFile.exists()) {
+        await imageFile.delete();
+        print("Image file deleted: ${video.localimage}");
+      } else {
+        print("Image file not found: ${video.localimage}");
+      }
+    }
+
+    print("Video deleted from downloads successfully.");
+    return true; // Indicate success
+  } catch (e) {
+    print("Error deleting video from downloads: $e");
+    return false; // Indicate failure
+  }
+}

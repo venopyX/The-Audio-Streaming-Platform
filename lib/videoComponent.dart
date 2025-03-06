@@ -167,7 +167,7 @@ class _VideoComponentState extends State<VideoComponent> {
                                 );
                                 break;
                               case 'remove_from_downloads':
-                                saveToFavorites(widget.video);
+                                deleteDownload(widget.video);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('removed from downloads'),

@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'connectivityProvider.dart';
 import 'main.dart';
 import 'MyVideo.dart';
-final TextEditingController _searchController = TextEditingController();
 
 class YoutubeScreen extends StatefulWidget {
   const YoutubeScreen({super.key});
@@ -19,8 +18,10 @@ class YoutubeScreen extends StatefulWidget {
 }
 
 class _YoutubeScreenState extends State<YoutubeScreen> {
+  final TextEditingController _searchController = TextEditingController();
   List<MyVideo> _videos = [];
   bool _isLoading = false;
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       _isLoading = true;
     });
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
-    List<Video> videos = await youtubeDataApi.fetchTrendingVideo() ;
+    List<Video> videos = await youtubeDataApi.fetchTrendingVideo();
     List<MyVideo> processedVideos = [];
     for (var videoData in videos) {
       MyVideo videoWithHighestThumbnail = processVideoThumbnails(videoData);
@@ -46,9 +47,20 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
   }
 
   void searchYoutube(String query) async {
+    if (query.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a search query'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      _isLoading = true;
+      _isSearching = true;
     });
+
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     List videos = await youtubeDataApi.fetchSearchVideo(query);
     List<Video> temp = videos.whereType<Video>().toList();
@@ -58,10 +70,17 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       MyVideo videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
+
     setState(() {
       _videos = processedVideos;
-      _isLoading = false;
+      _isSearching = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,41 +91,59 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search...',
-                hintStyle: TextStyle(color: Colors.grey),
+                hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                 filled: true,
                 fillColor: Colors.grey[900],
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 prefixIcon: Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: SvgPicture.asset(
                     'assets/icons/youtube.svg',
-                    height: 20,
+                    height: 24,
                     color: Colors.white,
                   ),
                 ),
-                suffixIcon: Row(
+                suffixIcon: _isSearching
+                    ? Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_searchController.text.isNotEmpty)
-                      IconButton(
+                    AnimatedSwitcher(
+                      duration: Duration(milliseconds: 200),
+                      child: _searchController.text.isNotEmpty
+                          ? IconButton(
+                        key: ValueKey('clear'),
                         icon: Icon(Icons.clear, color: Colors.white),
                         onPressed: () {
                           _searchController.clear();
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) {
-                              setState(() {});
-                            }
-                          });
+                          setState(() {});
                         },
-                      ),
+                      )
+                          : SizedBox.shrink(),
+                    ),
                     IconButton(
                       icon: Icon(Icons.search, color: Colors.white),
                       onPressed: () {
@@ -116,13 +153,14 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                   ],
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white, fontSize: 16),
               onChanged: (text) {
                 setState(() {});
               },
               onSubmitted: (query) {
-                searchYoutube(_searchController.text);
+                searchYoutube(query);
               },
+              textInputAction: TextInputAction.search,
             ),
           ),
           Expanded(
@@ -166,7 +204,12 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                   ),
                   // Add a button to navigate to downloads if you have a downloads screen
                   // Example:
-
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     Navigator.push(context, MaterialPageRoute(builder: (context) => DownloadsScreen()));
+                  //   },
+                  //   child: Text('Go to Downloads'),
+                  // ),
                 ],
               ),
             ),

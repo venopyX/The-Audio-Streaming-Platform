@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'fetchYoutubeStreamUrl.dart';
@@ -9,13 +11,21 @@ import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:audiobinge/MyVideo.dart';
 final db = Localstore.instance;
 
-Future<void> downloadAndSaveMetaData(MyVideo video) async{
-  String audiopath = await downloadAudio(video.videoId!, '${video.channelName!}-${video.title!}');
+Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video) async{
+  String audiopath = await downloadFileDirect(video.videoId!, '${video.channelName!}-${video.title!}');
   String imagepath = await downloadImageFromUrl(video.thumbnails!.first.url!, '${video.channelName!}-${video.title!}');
 
   if(audiopath != "none"){
       await saveToDownloads(video, audiopath,imagepath);
   }
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content:  Text('download of ${video.title} done'),
+      duration:Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.white,
+    ),
+  );
 
 }
 Future<String> downloadAudio(String id, String fileName) async {
@@ -182,5 +192,37 @@ Future<bool> deleteDownload(MyVideo video) async {
   } catch (e) {
     print("Error deleting video from downloads: $e");
     return false; // Indicate failure
+  }
+}
+
+
+Future<String> downloadFileDirect(String id, String fileName) async {
+  try {
+    var stream = await fetchAcutalStream(id);
+    if (stream == null) {
+      print("Failed to get audio stream.");
+      return "none";
+    }
+
+    String path = await getDownloadPath();
+    String savePath = '$path/$fileName.mp3';
+
+
+// Open a file for writing.
+    var file = File(savePath);
+    var fileStream = file.openWrite();
+
+// Pipe all the content of the stream into the file.
+    await stream.pipe(fileStream);
+
+// Close the file.
+    await fileStream.flush();
+    await fileStream.close();
+
+    print("Download complete: $savePath");
+    return savePath;
+  } catch (e) {
+    print("Download failed: $e");
+    return "none";
   }
 }

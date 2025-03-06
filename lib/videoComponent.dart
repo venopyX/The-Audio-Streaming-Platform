@@ -155,10 +155,10 @@ class _VideoComponentState extends State<VideoComponent> {
                                 );
                                 break;
                               case 'add_to_downloads':
-                                downloadAndSaveMetaData(widget.video);
+                                downloadAndSaveMetaData(context,widget.video);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('downloading please wait...'),
+                                    content: Text('downloading in the background, will show up in downloads when complete'),
                                     backgroundColor: Colors.white,
                                     elevation: 10,
                                     behavior: SnackBarBehavior.floating,

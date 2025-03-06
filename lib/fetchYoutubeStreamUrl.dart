@@ -15,6 +15,22 @@ Future<String> fetchYoutubeStreamUrl(String id) async{
   return audio.url.toString();
 }
 
+Future<Stream<List<int>>> fetchAcutalStream(String id) async{
+  final yt = YoutubeExplode();
+  final manifest = await yt.videos.streams.getManifest(id,
+      // You can also pass a list of preferred clients, otherwise the library will handle it:
+      ytClients: [
+        YoutubeApiClient.androidVr,
+      ]);
+
+  // Print all the available streams.
+  print('fetched url');
+  final audio = manifest.audioOnly.withHighestBitrate();
+  var stream = yt.videos.streams.get(audio);
+  yt.close();
+  return stream;
+}
+
 Future<List<ClosedCaption>> fetchYoutubeClosedCaptions(String id) async{
   var yt = YoutubeExplode();
 

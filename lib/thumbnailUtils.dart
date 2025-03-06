@@ -1,3 +1,4 @@
+import 'package:audiobinge/MyVideo.dart';
 import 'package:youtube_scrape_api/models/video.dart'; // Import your Video class
 import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +15,10 @@ Thumbnail? getHighestQualityThumbnail(List<Thumbnail>? thumbnails) {
   return sortedThumbnails.first;
 }
 
-Video processVideoThumbnails(Video video) {
+MyVideo processVideoThumbnails(Video video) {
   Thumbnail? highestThumbnail = getHighestQualityThumbnail(video.thumbnails);
   if (highestThumbnail != null) {
-    return Video(
+    return MyVideo(
       videoId: video.videoId,
       duration: video.duration,
       title: video.title,
@@ -27,7 +28,7 @@ Video processVideoThumbnails(Video video) {
       thumbnails: [highestThumbnail],
     );
   } else {
-    return video; // Return the original video if no thumbnails
+    return video as MyVideo; // Return the original video if no thumbnails
   }
 }
 

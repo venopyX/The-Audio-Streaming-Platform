@@ -1,3 +1,5 @@
+import 'package:audiobinge/MyVideo.dart';
+
 import 'fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
@@ -10,11 +12,11 @@ import 'package:marquee/marquee.dart';
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {
   bool _isLiked = false;
-  Video? _currentVideo;
+  MyVideo? _currentVideo;
 
   bool get isLiked => _isLiked;
 
-  void setVideo(Video video) async {
+  void setVideo(MyVideo video) async {
     _currentVideo = video;
     _isLiked = await isFavorites(video);
     notifyListeners();
@@ -87,7 +89,18 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
           Positioned.fill(
             child: Image.network(
               playing.video.thumbnails![0].url!,
+              height: 100,
+              width: double.infinity,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Return your local placeholder image
+                return Image.asset(
+                  'assets/icon.png', // Replace with your asset path
+                  height: 100,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           Positioned.fill(
@@ -113,14 +126,17 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       blurRadius: 10,
                       spreadRadius: 2,
                       offset: Offset(0, 4),
-                    )
+                    ),
                   ],
                   image: DecorationImage(
-                    image: NetworkImage(playing.video.thumbnails![0].url!),
+                    image: playing.video.thumbnails != null && playing.video.thumbnails!.isNotEmpty
+                        ? NetworkImage(playing.video.thumbnails![0].url!) as ImageProvider
+                        : AssetImage('assets/logo.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
-              ),
+              )
+,
               SizedBox(height: 30),
               // Song Title & Channel
               Padding(
@@ -354,7 +370,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                             color: isCurrent ? Colors.blue.shade200 : Colors.white70),
                       ),
                       onTap: () {
-                        playing.assign(video,false);
+                        playing.assign(video,false,false);
                         Navigator.pop(context);
                       },
                     );

@@ -5,7 +5,10 @@ import 'package:youtube_scrape_api/youtube_scrape_api.dart';
 import 'videoComponent.dart';
 import 'thumbnailUtils.dart';
 import 'package:shimmer/shimmer.dart';
-
+import 'package:provider/provider.dart';
+import 'connectivityProvider.dart';
+import 'main.dart';
+import 'MyVideo.dart';
 final TextEditingController _searchController = TextEditingController();
 
 class YoutubeScreen extends StatefulWidget {
@@ -16,7 +19,7 @@ class YoutubeScreen extends StatefulWidget {
 }
 
 class _YoutubeScreenState extends State<YoutubeScreen> {
-  List<Video> _videos = [];
+  List<MyVideo> _videos = [];
   bool _isLoading = false;
 
   @override
@@ -30,10 +33,10 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       _isLoading = true;
     });
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
-    List<Video> videos = await youtubeDataApi.fetchTrendingVideo();
-    List<Video> processedVideos = [];
+    List<Video> videos = await youtubeDataApi.fetchTrendingVideo() ;
+    List<MyVideo> processedVideos = [];
     for (var videoData in videos) {
-      Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
+      MyVideo videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
     setState(() {
@@ -50,9 +53,9 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
     List videos = await youtubeDataApi.fetchSearchVideo(query);
     List<Video> temp = videos.whereType<Video>().toList();
 
-    List<Video> processedVideos = [];
+    List<MyVideo> processedVideos = [];
     for (var videoData in temp) {
-      Video videoWithHighestThumbnail = processVideoThumbnails(videoData);
+      MyVideo videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
     setState(() {
@@ -63,6 +66,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
     return Scaffold(
       backgroundColor: Colors.black,
       body: Column(
@@ -122,21 +126,22 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
             ),
           ),
           Expanded(
-            child: GridView.builder(
+            child: isOnline
+                ? GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 10.0,
                 mainAxisSpacing: 20.0,
               ),
               padding: EdgeInsets.all(16),
-              itemCount: _isLoading ? 10 : _videos.length, // Show shimmer placeholders when loading
+              itemCount: _isLoading ? 10 : _videos.length,
               itemBuilder: (context, index) {
                 if (_isLoading) {
                   return Shimmer.fromColors(
                     baseColor: Colors.grey[800]!,
                     highlightColor: Colors.grey[700]!,
                     child: Container(
-                      height: 100, // Adjust shimmer item height
+                      height: 100,
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(15),
@@ -148,6 +153,22 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                   return VideoComponent(video: video);
                 }
               },
+            )
+                : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.wifi_off, size: 50, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text(
+                    "You're offline. Go to downloads.",
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                  // Add a button to navigate to downloads if you have a downloads screen
+                  // Example:
+
+                ],
+              ),
             ),
           ),
         ],

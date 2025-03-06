@@ -1,3 +1,4 @@
+import 'package:audiobinge/MyVideo.dart';
 import 'package:localstore/localstore.dart';
 import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:youtube_scrape_api/models/video.dart';
@@ -5,8 +6,8 @@ import 'package:youtube_scrape_api/models/video.dart';
 
 final db = Localstore.instance;
 
-Future<List<Video>> getFavorites() async {
-  List<Video>favoriteList = [];
+Future<List<MyVideo>> getFavorites() async {
+  List<MyVideo>favoriteList = [];
   final favorites = await db.collection('favorites').get();
   Iterable? values = favorites?.values;
 
@@ -19,7 +20,7 @@ Future<List<Video>> getFavorites() async {
       List<Thumbnail> thumbnails = [];
       thumbnails.add(thumbnail);
 
-      Video video = Video(
+      MyVideo video = MyVideo(
           videoId: value['videoId'],
           duration: value['duration'],
           title: value['title'],
@@ -34,7 +35,7 @@ Future<List<Video>> getFavorites() async {
 }
 
 
-Future<bool> saveToFavorites(Video video) async {
+Future<bool> saveToFavorites(MyVideo video) async {
   final id = video.videoId;
   final thumbnail = video.thumbnails?.isNotEmpty == true ? video.thumbnails!.first : null;
 
@@ -50,7 +51,7 @@ Future<bool> saveToFavorites(Video video) async {
       'height': thumbnail?.height,
       'weight': thumbnail?.width,
     });
-    print("Video saved to favorites successfully.");
+    print("MyVideo saved to favorites successfully.");
     return true; // Indicate success
   } catch (e) {
     print("Error saving video to favorites: $e");
@@ -58,12 +59,12 @@ Future<bool> saveToFavorites(Video video) async {
   }
 }
 
-Future<bool> removeFavorites(Video video) async {
+Future<bool> removeFavorites(MyVideo video) async {
   final id = video.videoId;
 
   try {
     await db.collection('favorites').doc(id).delete();
-    print("Video removed from favorites successfully.");
+    print("MyVideo removed from favorites successfully.");
     return true; // Indicate success
   } catch (e) {
     print("Error removing video from favorites: $e");
@@ -71,7 +72,7 @@ Future<bool> removeFavorites(Video video) async {
   }
 }
 
-Future<bool> isFavorites(Video video) async {
+Future<bool> isFavorites(MyVideo video) async {
   final id = video.videoId;
   try {
     final favorite = await db.collection('favorites').doc(id).get();

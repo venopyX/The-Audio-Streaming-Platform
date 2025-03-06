@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:ui';
+import 'package:audiobinge/downloadsPage.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import 'fetchYoutubeStreamUrl.dart';
@@ -11,32 +13,30 @@ import 'favoritePage.dart';
 import 'bottomPlayer.dart';
 import 'package:just_audio/just_audio.dart';
 import 'youtubeAudioStream.dart';
+import 'connectivityProvider.dart';
+import 'MyVideo.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
     androidNotificationChannelName: 'Audio playback',
     androidNotificationOngoing: true,
   );
-  runApp(
-      MultiProvider(
-          providers: [
-            ChangeNotifierProvider(create: (_) => LikeNotifier()),
-            ChangeNotifierProvider(create: (_) => Playing()),
-          ],
-      child:const MyApp()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => LikeNotifier()),
+    ChangeNotifierProvider(create: (_) => Playing()),
+    ChangeNotifierProvider(create: (_) => NetworkProvider()),
+  ], child: const MyApp()));
 }
-
-
 
 class Playing with ChangeNotifier {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
-  Video _video = Video();
-  List<Video> _queue = [];
-  ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: []); // Initialize playlist
+  MyVideo _video = MyVideo();
+  List<MyVideo> _queue = [];
+  ConcatenatingAudioSource _playlist =
+      ConcatenatingAudioSource(children: []); // Initialize playlist
   List<ytex.ClosedCaption> captions = [];
   String currentCaption = "no caption fo this media";
 
@@ -50,14 +50,12 @@ class Playing with ChangeNotifier {
   bool get isShuffling => _isShuffling;
   ConcatenatingAudioSource get playlist => _playlist;
 
-
-
   Duration get duration => _duration;
   Duration get position => _position;
-  Video get video => _video;
+  MyVideo get video => _video;
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
-  List<Video> get queue => _queue;
+  List<MyVideo> get queue => _queue;
   int get isLooping => _isLooping;
 
   Playing() {
@@ -85,10 +83,11 @@ class Playing with ChangeNotifier {
     _audioPlayer.positionStream.listen((position) {
       _position = position;
 
-      if(captions.isNotEmpty) {
+      if (captions.isNotEmpty) {
         currentCaption = getCaptionAtTime(captions, position);
-      } else{
-        currentCaption = "No caption for this media";      }
+      } else {
+        currentCaption = "No caption for this media";
+      }
       notifyListeners();
     });
 
@@ -114,7 +113,8 @@ class Playing with ChangeNotifier {
     _audioPlayer.currentIndexStream.listen((index) async {
       if (index != null && index >= 0 && index < _queue.length) {
         _video = _queue[index];
-        captions = (await fetchYoutubeClosedCaptions(_video.videoId!));// Sync _video with the current track
+        captions = (await fetchYoutubeClosedCaptions(
+            _video.videoId!)); // Sync _video with the current track
         notifyListeners();
       }
     });
@@ -122,9 +122,11 @@ class Playing with ChangeNotifier {
 
   Future<void> toggleShuffle() async {
     _isShuffling = !_isShuffling;
-    await _audioPlayer.setShuffleModeEnabled(_isShuffling); // Use just_audio's shuffle
+    await _audioPlayer
+        .setShuffleModeEnabled(_isShuffling); // Use just_audio's shuffle
     notifyListeners();
   }
+
   Future<void> toggleLooping() async {
     _isLooping = (_isLooping + 1) % 3;
     if (_isLooping == 0) {
@@ -137,7 +139,7 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> assign(Video v, bool clear) async {
+  Future<void> assign(MyVideo v, bool clear, bool local) async {
     _isloading = true;
     notifyListeners();
     if (clear) {
@@ -148,17 +150,8 @@ class Playing with ChangeNotifier {
     _video = v;
     resetPosition();
     await pause();
+    AudioSource audioSource = await createAudioSource(v, local);
 
-    var url = await fetchYoutubeStreamUrl(v.videoId!);
-    final audioSource = AudioSource.uri(Uri.parse(url),
-      tag: MediaItem(
-        // Specify a unique ID for each media item:
-        id: v.videoId!,
-        // Metadata to display in the notification:
-        album: v.channelName,
-        title: v.title!,
-        artUri: Uri.parse(v.thumbnails![0].url!),
-      ),);
     _playlist = ConcatenatingAudioSource(children: [audioSource]);
     await _audioPlayer.setAudioSource(_playlist);
 
@@ -169,30 +162,21 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addToQueue(Video v) async {
-    if (_queue.isEmpty){
-      assign(v, true);
+  Future<void> addToQueue(MyVideo v, bool local) async {
+    if (_queue.isEmpty) {
+      assign(v, true, local);
       return;
     }
 
     _queue.add(v); // Add video to the queue
 
-
-    var url = await fetchYoutubeStreamUrl(v.videoId!);
-    final audioSource = AudioSource.uri(Uri.parse(url),tag:MediaItem(
-      // Specify a unique ID for each media item:
-      id: v.videoId!,
-      // Metadata to display in the notification:
-      album: v.channelName,
-      title: v.title!,
-      artUri: Uri.parse(v.thumbnails![0].url!),
-    ) );
+    AudioSource audioSource = await createAudioSource(v, local);
     await _playlist.add(audioSource); // Add audio source to the playlist
 
     notifyListeners();
   }
 
-  Future<void> removeFromQueue(Video video) async {
+  Future<void> removeFromQueue(MyVideo video) async {
     final index = _queue.indexOf(video);
     if (index != -1) {
       _queue.removeAt(index); // Remove video from the queue
@@ -203,7 +187,7 @@ class Playing with ChangeNotifier {
         if (_queue.isNotEmpty) {
           _video = _queue[_audioPlayer.currentIndex ?? 0];
         } else {
-          _video = Video(); // Reset _video if the queue is empty
+          _video = MyVideo(); // Reset _video if the queue is empty
         }
       }
 
@@ -216,20 +200,20 @@ class Playing with ChangeNotifier {
     _playlist = ConcatenatingAudioSource(children: []); // Clear the playlist
     await _audioPlayer.setAudioSource(_playlist);
 
-    _video = Video(); // Reset _video
+    _video = MyVideo(); // Reset _video
     notifyListeners();
   }
-  Future<void> setQueue(List<Video> videos) async{
+
+  Future<void> setQueue(List<MyVideo> videos, bool local) async {
     await clearQueue();
     _isloading = true;
     notifyListeners();
     if (videos.isNotEmpty) {
       for (var video in videos) {
-        addToQueue(video);
+        addToQueue(video, local);
       }
     }
     _isloading = false;
-
 
     notifyListeners();
   }
@@ -312,6 +296,38 @@ class Playing with ChangeNotifier {
     await _audioPlayer.seek(position);
   }
 
+  Future<AudioSource> createAudioSource(v, bool local) async {
+    if (local) {
+      print(v.localaudio);
+
+      return AudioSource.uri(
+        Uri.file(v.localaudio),
+        tag: MediaItem(
+          id: v.videoId!,
+          album: v.channelName,
+          title: v.title!,
+          artUri: v.thumbnails != null && v.thumbnails!.isNotEmpty
+              ? Uri.parse(v.thumbnails![0].url!)
+              : null,
+        ),
+      );
+    } else {
+      var url = await fetchYoutubeStreamUrl(v.videoId!);
+
+      return AudioSource.uri(
+        Uri.parse(url),
+        tag: MediaItem(
+          id: v.videoId!,
+          album: v.channelName,
+          title: v.title!,
+          artUri: v.thumbnails != null && v.thumbnails!.isNotEmpty
+              ? Uri.parse(v.thumbnails![0].url!)
+              : null,
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _audioPlayer.dispose();
@@ -355,6 +371,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
   final List<Widget> _pages = [
     YoutubeScreen(),
     FavoriteScreen(),
+    DownloadScreen()
   ];
 
   void _onItemTapped(int index) {
@@ -368,8 +385,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
     final playing = context.watch<Playing>();
     return Scaffold(
       extendBody: true,
-      appBar: CustomAppBar(
-      ),
+      appBar: CustomAppBar(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -397,7 +413,8 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: kBottomNavigationBarHeight, // Position above the bottom nav
+                bottom:
+                    kBottomNavigationBarHeight, // Position above the bottom nav
                 child: BottomPlayer(),
               ),
           ],
@@ -428,6 +445,10 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
                   icon: Icon(Icons.favorite_sharp),
                   label: 'Favorites',
                 ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.download_for_offline_rounded),
+                  label: 'Downloads',
+                )
               ],
             ),
           ),
@@ -466,10 +487,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,
-      flexibleSpace: Container(
-
-      ),
-
+      flexibleSpace: Container(),
     );
   }
 

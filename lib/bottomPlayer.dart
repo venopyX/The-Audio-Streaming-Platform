@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'youtubeAudioStream.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
+import 'connectivityProvider.dart';
 
 class BottomPlayer extends StatefulWidget {
   const BottomPlayer({super.key});
@@ -14,14 +17,15 @@ class _BottomPlayerState extends State<BottomPlayer> {
   @override
   Widget build(BuildContext context) {
     final playing = Provider.of<Playing>(context, listen: false);
+    bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Container(
-        height: 80, // Increased height for better spacing
+        height: 80,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
-          color: Colors.grey[900], // Darker background
-          borderRadius: BorderRadius.circular(15), // Rounded corners
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -35,11 +39,9 @@ class _BottomPlayerState extends State<BottomPlayer> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Thumbnail, Title, and Play/Pause Button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Thumbnail and Text
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
@@ -63,20 +65,34 @@ class _BottomPlayerState extends State<BottomPlayer> {
                     ),
                     child: Row(
                       children: [
-                        // Thumbnail
-                        Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: DecorationImage(
-                              image: NetworkImage(playing.video.thumbnails![0].url!),
-                              fit: BoxFit.cover,
+                        ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(15),
+                            bottom: Radius.circular(15),
+                          ),
+                          child: SizedBox(
+                            width: 50, // Fixed width for thumbnail
+                            height: 50, // Fixed height for thumbnail
+                            child: AspectRatio(
+                              aspectRatio: 1, // Maintain aspect ratio
+                              child: (playing.video.localimage != null)
+                                  ? Image.file(
+                                File(playing.video.localimage!),
+                                fit: BoxFit.cover, // Or BoxFit.fitWidth/fitHeight
+                              )
+                                  : (isOnline)
+                                  ? Image.network(
+                                playing.video.thumbnails![0].url!,
+                                fit: BoxFit.cover,
+                              )
+                                  : Image.asset(
+                                'assets/icon.png',
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
                         SizedBox(width: 12),
-                        // Title and Channel Name
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +123,6 @@ class _BottomPlayerState extends State<BottomPlayer> {
                       ],
                     ),
                   ),
-                  // Play/Pause Button
                   InkWell(
                     onTap: () {
                       playing.setIsPlaying(!playing.isPlaying);
@@ -119,10 +134,16 @@ class _BottomPlayerState extends State<BottomPlayer> {
                         color: Colors.white.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: playing.isloading?SizedBox(height: 20,width: 20,child:CircularProgressIndicator(
-                        strokeWidth: 1,
-                        color: Colors.white,
-                      ),): Icon(
+                      child: playing.isloading
+                          ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1,
+                          color: Colors.white,
+                        ),
+                      )
+                          : Icon(
                         playing.isPlaying ? Icons.pause : Icons.play_arrow,
                         color: Colors.white,
                         size: 24,
@@ -131,7 +152,6 @@ class _BottomPlayerState extends State<BottomPlayer> {
                   ),
                 ],
               ),
-              // Progress Slider
               SliderTheme(
                 data: SliderThemeData(
                   overlayShape: SliderComponentShape.noOverlay,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audiobinge/MyVideo.dart';
 
 import 'fetchYoutubeStreamUrl.dart';
@@ -9,6 +11,7 @@ import 'favoriteUtils.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'thumbnailUtils.dart';
 import 'package:marquee/marquee.dart';
+import 'connectivityProvider.dart';
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {
   bool _isLiked = false;
@@ -58,6 +61,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
     final likeNotifier = context.watch<LikeNotifier>(); // Watch the LikeNotifier
+    bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
 
     // Set the current video in LikeNotifier
     likeNotifier.setVideo(playing.video);
@@ -86,22 +90,27 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
       body: Stack(
         children: [
           // Blurred Background
-          Positioned.fill(
-            child: Image.network(
-              playing.video.thumbnails![0].url!,
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                // Return your local placeholder image
-                return Image.asset(
-                  'assets/icon.png', // Replace with your asset path
-                  height: 100,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
+      Positioned.fill(
+      child:  (playing.video.localimage != null)
+          ? Image.file(
+        File(playing.video.localimage!), // Use Image.file for local paths
+        height: 100,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      )
+          : (isOnline)
+          ? Image.network(
+        playing.video.thumbnails![0].url!,
+        height: 100,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      )
+          : Image.asset(
+        'assets/icon.png', // Replace with your asset path
+        height: 100,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      )
           ),
           Positioned.fill(
             child: BackdropFilter(
@@ -128,10 +137,18 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       offset: Offset(0, 4),
                     ),
                   ],
-                  image: DecorationImage(
-                    image: playing.video.thumbnails != null && playing.video.thumbnails!.isNotEmpty
-                        ? NetworkImage(playing.video.thumbnails![0].url!) as ImageProvider
-                        : AssetImage('assets/logo.png'),
+                  image: (playing.video.localimage != null)
+                      ? DecorationImage(
+                    image: FileImage(File(playing.video.localimage!)),
+                    fit: BoxFit.cover,
+                  )
+                      : (isOnline)
+                      ? DecorationImage(
+                    image: NetworkImage(playing.video.thumbnails![0].url!),
+                    fit: BoxFit.cover,
+                  )
+                      : DecorationImage(
+                    image: AssetImage('assets/logo.png'),
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -9,6 +9,7 @@ import 'youtubeAudioStream.dart';
 import 'favoriteUtils.dart';
 import 'connectivityProvider.dart';
 import 'MyVideo.dart';
+import 'colors.dart';
 
 class VideoComponent extends StatefulWidget {
   final MyVideo video;
@@ -21,6 +22,8 @@ class VideoComponent extends StatefulWidget {
 
 class _VideoComponentState extends State<VideoComponent> {
   late Future<List<bool>> _future;
+  double _downloadProgress = 0.0;
+  bool _isDownloading = false;
 
   @override
   void initState() {
@@ -31,10 +34,18 @@ class _VideoComponentState extends State<VideoComponent> {
     ]);
   }
 
+  void _handleDownloadProgress(double progress) {
+    setState(() {
+      _downloadProgress = progress;
+      _isDownloading = progress < 1.0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final playing = Provider.of<Playing>(context, listen: false);
     bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
+
     return FutureBuilder<List<bool>>(
       future: _future,
       builder: (context, snapshot) {
@@ -42,16 +53,11 @@ class _VideoComponentState extends State<VideoComponent> {
           return CircularProgressIndicator(); // Show loading indicator
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
-        } else if (!snapshot.hasData ||
-            snapshot.data == null ||
-            snapshot.data!.isEmpty) {
+        } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
           return Text('No data available');
         } else {
-          // Safely access data
-          bool _isLiked =
-              (snapshot.data![0] ?? false); // Default to false if null
-          bool _isDownloaded =
-              (snapshot.data![1] ?? false); // Default to false if null
+          bool _isLiked = (snapshot.data![0] ?? false);
+          bool _isDownloaded = (snapshot.data![1] ?? false);
 
           return GestureDetector(
             onTap: () {
@@ -73,11 +79,9 @@ class _VideoComponentState extends State<VideoComponent> {
                           top: Radius.circular(15),
                           bottom: Radius.circular(15),
                         ),
-                        child:
-
-                        (widget.video.localimage != null)
+                        child: (widget.video.localimage != null)
                             ? Image.file(
-                          File(widget.video.localimage!), // Use Image.file for local paths
+                          File(widget.video.localimage!),
                           height: 100,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -90,11 +94,12 @@ class _VideoComponentState extends State<VideoComponent> {
                           fit: BoxFit.cover,
                         )
                             : Image.asset(
-                          'assets/icon.png', // Replace with your asset path
+                          'assets/icon.png',
                           height: 100,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                        )),
+                        ),
+                      ),
                       Positioned(
                         top: -4,
                         right: -4,
@@ -134,7 +139,7 @@ class _VideoComponentState extends State<VideoComponent> {
                                 saveToFavorites(widget.video);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('added to favorites'),
+                                    content: Text('Added to favorites'),
                                     backgroundColor: Colors.white,
                                     elevation: 10,
                                     behavior: SnackBarBehavior.floating,
@@ -155,22 +160,26 @@ class _VideoComponentState extends State<VideoComponent> {
                                 );
                                 break;
                               case 'add_to_downloads':
-                                downloadAndSaveMetaData(context,widget.video);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('downloading in the background, will show up in downloads when complete'),
+                                    content: Text('Download started'),
                                     backgroundColor: Colors.white,
                                     elevation: 10,
                                     behavior: SnackBarBehavior.floating,
                                     margin: EdgeInsets.all(5),
                                   ),
                                 );
+                                downloadAndSaveMetaData(
+                                  context,
+                                  widget.video,
+                                  _handleDownloadProgress,
+                                );
                                 break;
                               case 'remove_from_downloads':
                                 deleteDownload(widget.video);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('removed from downloads'),
+                                    content: Text('Removed from downloads'),
                                     backgroundColor: Colors.white,
                                     elevation: 10,
                                     behavior: SnackBarBehavior.floating,
@@ -188,22 +197,22 @@ class _VideoComponentState extends State<VideoComponent> {
                               ),
                               _isLiked
                                   ? PopupMenuItem<String>(
-                                      value: 'remove_from_favorites',
-                                      child: Text('Remove from favorites'),
-                                    )
+                                value: 'remove_from_favorites',
+                                child: Text('Remove from favorites'),
+                              )
                                   : PopupMenuItem<String>(
-                                      value: 'add_to_favorites',
-                                      child: Text('Add to favorites'),
-                                    ),
+                                value: 'add_to_favorites',
+                                child: Text('Add to favorites'),
+                              ),
                               _isDownloaded
                                   ? PopupMenuItem<String>(
-                                      value: 'remove_from_downloads',
-                                      child: Text('Remove from downloads'),
-                                    )
+                                value: 'remove_from_downloads',
+                                child: Text('Remove from downloads'),
+                              )
                                   : PopupMenuItem<String>(
-                                      value: 'add_to_downloads',
-                                      child: Text('Download'),
-                                    ),
+                                value: 'add_to_downloads',
+                                child: Text('Download'),
+                              ),
                             ];
                           },
                         ),
@@ -232,6 +241,12 @@ class _VideoComponentState extends State<VideoComponent> {
                         ),
                     ],
                   ),
+                  if (_isDownloading)
+                    LinearProgressIndicator(
+                      value: _downloadProgress,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                    ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(

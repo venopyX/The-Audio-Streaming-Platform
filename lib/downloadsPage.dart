@@ -9,6 +9,7 @@ import 'main.dart';
 import 'package:provider/provider.dart';
 import 'downloadUtils.dart';
 import 'MyVideo.dart';
+import 'colors.dart';
 
 class DownloadScreen extends StatefulWidget {
   const DownloadScreen({super.key});
@@ -62,9 +63,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 ),
                 if (_videos.isNotEmpty)
                   ElevatedButton.icon(
-                    onPressed:()=> playing.setQueue(_videos,false),
+                    onPressed:()=> playing.setQueue(_videos,true),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple, // Red color for the button
+                      backgroundColor: AppColors.primaryColor, // Red color for the button
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),

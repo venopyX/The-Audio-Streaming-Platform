@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'connectivityProvider.dart';
 import 'main.dart';
 import 'MyVideo.dart';
+import 'colors.dart';
 
 class YoutubeScreen extends StatefulWidget {
   const YoutubeScreen({super.key});
@@ -51,7 +52,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please enter a search query'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.primaryColor,
         ),
       );
       return;
@@ -109,7 +110,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                  borderSide: BorderSide(color:AppColors.primaryColor , width: 1.5),
                 ),
                 contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 prefixIcon: Padding(
@@ -122,7 +123,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                 ),
                 suffixIcon: _isSearching
                     ? Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.all(6.0),
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: Colors.white,

@@ -8,6 +8,7 @@ import 'main.dart';
 import 'package:provider/provider.dart';
 import 'connectivityProvider.dart'; // Import connectivity provider
 import 'MyVideo.dart';
+import 'colors.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -65,7 +66,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         ElevatedButton.icon(
                           onPressed: () => playing.setQueue(_videos, false),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: AppColors.primaryColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),

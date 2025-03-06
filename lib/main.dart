@@ -7,7 +7,6 @@ import 'fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytex;
-import 'package:youtube_scrape_api/models/video.dart';
 import 'youtubePage.dart';
 import 'favoritePage.dart';
 import 'bottomPlayer.dart';
@@ -15,6 +14,8 @@ import 'package:just_audio/just_audio.dart';
 import 'youtubeAudioStream.dart';
 import 'connectivityProvider.dart';
 import 'MyVideo.dart';
+import 'colors.dart';
+import 'connectivityProvider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,7 @@ class Playing with ChangeNotifier {
       ConcatenatingAudioSource(children: []); // Initialize playlist
   List<ytex.ClosedCaption> captions = [];
   String currentCaption = "no caption fo this media";
+
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
@@ -83,7 +85,7 @@ class Playing with ChangeNotifier {
     _audioPlayer.positionStream.listen((position) {
       _position = position;
 
-      if (captions.isNotEmpty) {
+      if (captions.isNotEmpty ) {
         currentCaption = getCaptionAtTime(captions, position);
       } else {
         currentCaption = "No caption for this media";
@@ -110,14 +112,20 @@ class Playing with ChangeNotifier {
       }
     });
 
-    _audioPlayer.currentIndexStream.listen((index) async {
-      if (index != null && index >= 0 && index < _queue.length) {
-        _video = _queue[index];
-        captions = (await fetchYoutubeClosedCaptions(
-            _video.videoId!)); // Sync _video with the current track
-        notifyListeners();
-      }
-    });
+    YourAudioNotifier(BuildContext context) { // Add context to constructor
+      _audioPlayer.currentIndexStream.listen((index) async {
+        if (index != null && index >= 0 && index < _queue.length) {
+          _video = _queue[index];
+          final networkProvider = Provider.of<NetworkProvider>(context, listen: false); // Get NetworkProvider
+          if (networkProvider.isOnline) {
+            captions = (await fetchYoutubeClosedCaptions(_video.videoId!));
+            notifyListeners();
+          } else {
+            print("Offline: Captions not fetched.");
+          }
+        }
+      });
+    }
   }
 
   Future<void> toggleShuffle() async {
@@ -432,7 +440,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: Colors.deepPurpleAccent,
+              selectedItemColor: AppColors.primaryColor,
               unselectedItemColor: Colors.grey,
               selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
               unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),

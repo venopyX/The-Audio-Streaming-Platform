@@ -11,8 +11,8 @@ import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:audiobinge/MyVideo.dart';
 final db = Localstore.instance;
 
-Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video) async{
-  String audiopath = await downloadFileDirect(video.videoId!, '${video.channelName!}-${video.title!}');
+Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video,void Function(double progress) progressCallback,) async{
+  String audiopath = await downloadAudio(video.videoId!, '${video.channelName!}-${video.title!}',context,progressCallback);
   String imagepath = await downloadImageFromUrl(video.thumbnails!.first.url!, '${video.channelName!}-${video.title!}');
 
   if(audiopath != "none"){
@@ -28,7 +28,7 @@ Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video) async{
   );
 
 }
-Future<String> downloadAudio(String id, String fileName) async {
+Future<String> downloadAudio(String id, String fileName,BuildContext context,void Function(double progress) progressCallback) async {
   try {
     String? audioUrl = await fetchYoutubeStreamUrl(id);
     if (audioUrl == null) {
@@ -43,6 +43,8 @@ Future<String> downloadAudio(String id, String fileName) async {
     await dio.download(audioUrl, savePath, onReceiveProgress: (received, total) {
       if (total != -1) {
         print('Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
+        double progress = received / total;
+        progressCallback(progress);
       }
     });
 
@@ -196,6 +198,7 @@ Future<bool> deleteDownload(MyVideo video) async {
 }
 
 
+
 Future<String> downloadFileDirect(String id, String fileName) async {
   try {
     var stream = await fetchAcutalStream(id);
@@ -207,15 +210,17 @@ Future<String> downloadFileDirect(String id, String fileName) async {
     String path = await getDownloadPath();
     String savePath = '$path/$fileName.mp3';
 
-
-// Open a file for writing.
+    // Open a file for writing
     var file = File(savePath);
     var fileStream = file.openWrite();
 
-// Pipe all the content of the stream into the file.
-    await stream.pipe(fileStream);
+    // Pipe the stream into the file
+    await stream.pipe(fileStream).catchError((e) {
+      print("Error writing to file: $e");
+      throw e; // Re-throw the error to be caught by the outer try-catch
+    });
 
-// Close the file.
+    // Ensure the file stream is properly closed
     await fileStream.flush();
     await fileStream.close();
 

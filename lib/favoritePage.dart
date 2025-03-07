@@ -64,7 +64,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                       ),
                       if (_videos.isNotEmpty)
                         ElevatedButton.icon(
-                          onPressed: () => playing.setQueue(_videos, false),
+                          onPressed: () => playing.setQueue(_videos),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,
                             shape: RoundedRectangleBorder(

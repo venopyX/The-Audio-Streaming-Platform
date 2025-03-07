@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:audiobinge/downloadUtils.dart';
 import 'package:audiobinge/downloadsPage.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -112,20 +113,14 @@ class Playing with ChangeNotifier {
       }
     });
 
-    YourAudioNotifier(BuildContext context) { // Add context to constructor
-      _audioPlayer.currentIndexStream.listen((index) async {
-        if (index != null && index >= 0 && index < _queue.length) {
-          _video = _queue[index];
-          final networkProvider = Provider.of<NetworkProvider>(context, listen: false); // Get NetworkProvider
-          if (networkProvider.isOnline) {
-            captions = (await fetchYoutubeClosedCaptions(_video.videoId!));
-            notifyListeners();
-          } else {
-            print("Offline: Captions not fetched.");
-          }
-        }
-      });
-    }
+
+    _audioPlayer.currentIndexStream.listen((index) async {
+      if (index != null && index >= 0 && index < _queue.length) {
+        _video = _queue[index];
+        captions = (await fetchYoutubeClosedCaptions(_video.videoId!));// Sync _video with the current track
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> toggleShuffle() async {
@@ -147,20 +142,20 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> assign(MyVideo v, bool clear, bool local) async {
+  Future<void> assign(MyVideo v, bool clear) async {
     _isloading = true;
+    await pause();
     notifyListeners();
+    AudioSource audioSource = await createAudioSource(v);
     if (clear) {
       _queue.clear();
       _queue.add(v);
+      _playlist =await ConcatenatingAudioSource(children: [audioSource]);
     }
 
     _video = v;
-    resetPosition();
-    await pause();
-    AudioSource audioSource = await createAudioSource(v, local);
+     resetPosition();
 
-    _playlist = ConcatenatingAudioSource(children: [audioSource]);
     await _audioPlayer.setAudioSource(_playlist);
 
     _isloading = false;
@@ -170,17 +165,18 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addToQueue(MyVideo v, bool local) async {
+  Future<void> addToQueue(MyVideo v) async {
     if (_queue.isEmpty) {
-      assign(v, true, local);
+      print("empty");
+      await assign(v, true);
+      notifyListeners();
       return;
     }
 
     _queue.add(v); // Add video to the queue
 
-    AudioSource audioSource = await createAudioSource(v, local);
+    AudioSource audioSource = await createAudioSource(v);
     await _playlist.add(audioSource); // Add audio source to the playlist
-
     notifyListeners();
   }
 
@@ -212,18 +208,20 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setQueue(List<MyVideo> videos, bool local) async {
-    await clearQueue();
+  Future<void> setQueue(List<MyVideo> videos) async {
     _isloading = true;
-    notifyListeners();
+    notifyListeners(); // Notify listeners that loading has started
+
+    await clearQueue(); // Clear the existing queue
+
     if (videos.isNotEmpty) {
       for (var video in videos) {
-        addToQueue(video, local);
+        await addToQueue(video); // Add each video to the queue
       }
     }
-    _isloading = false;
 
-    notifyListeners();
+    _isloading = false;
+    notifyListeners(); // Notify listeners that loading is complete and the queue has been updated
   }
 
   Future<void> next() async {
@@ -304,18 +302,19 @@ class Playing with ChangeNotifier {
     await _audioPlayer.seek(position);
   }
 
-  Future<AudioSource> createAudioSource(v, bool local) async {
+  Future<AudioSource> createAudioSource(MyVideo v) async {
+    var local = await isDownloaded(v);
     if (local) {
       print(v.localaudio);
 
       return AudioSource.uri(
-        Uri.file(v.localaudio),
+        Uri.file(v.localaudio!),
         tag: MediaItem(
           id: v.videoId!,
           album: v.channelName,
           title: v.title!,
           artUri: v.thumbnails != null && v.thumbnails!.isNotEmpty
-              ? Uri.parse(v.thumbnails![0].url!)
+              ? Uri.file(v.localimage!)
               : null,
         ),
       );

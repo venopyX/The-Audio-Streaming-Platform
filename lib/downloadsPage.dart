@@ -63,7 +63,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 ),
                 if (_videos.isNotEmpty)
                   ElevatedButton.icon(
-                    onPressed:()=> playing.setQueue(_videos,true),
+                    onPressed:()=> playing.setQueue(_videos),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor, // Red color for the button
                       shape: RoundedRectangleBorder(

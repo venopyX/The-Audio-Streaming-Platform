@@ -38,7 +38,7 @@ class Playing with ChangeNotifier {
   MyVideo _video = MyVideo();
   List<MyVideo> _queue = [];
   ConcatenatingAudioSource _playlist =
-      ConcatenatingAudioSource(children: []); // Initialize playlist
+  ConcatenatingAudioSource(children: []); // Initialize playlist
   List<ytex.ClosedCaption> captions = [];
   String currentCaption = "no caption fo this media";
 
@@ -50,15 +50,23 @@ class Playing with ChangeNotifier {
   bool _isloading = false;
 
   bool get isloading => _isloading;
+
   bool get isShuffling => _isShuffling;
+
   ConcatenatingAudioSource get playlist => _playlist;
 
   Duration get duration => _duration;
+
   Duration get position => _position;
+
   MyVideo get video => _video;
+
   AudioPlayer get audioPlayer => _audioPlayer;
+
   bool get isPlaying => _isPlaying;
+
   List<MyVideo> get queue => _queue;
+
   int get isLooping => _isLooping;
 
   Playing() {
@@ -86,7 +94,7 @@ class Playing with ChangeNotifier {
     _audioPlayer.positionStream.listen((position) {
       _position = position;
 
-      if (captions.isNotEmpty ) {
+      if (captions.isNotEmpty) {
         currentCaption = getCaptionAtTime(captions, position);
       } else {
         currentCaption = "No caption for this media";
@@ -117,7 +125,8 @@ class Playing with ChangeNotifier {
     _audioPlayer.currentIndexStream.listen((index) async {
       if (index != null && index >= 0 && index < _queue.length) {
         _video = _queue[index];
-        captions = (await fetchYoutubeClosedCaptions(_video.videoId!));// Sync _video with the current track
+        captions = (await fetchYoutubeClosedCaptions(
+            _video.videoId!)); // Sync _video with the current track
         notifyListeners();
       }
     });
@@ -150,11 +159,11 @@ class Playing with ChangeNotifier {
     if (clear) {
       _queue.clear();
       _queue.add(v);
-      _playlist =await ConcatenatingAudioSource(children: [audioSource]);
+      _playlist = await ConcatenatingAudioSource(children: [audioSource]);
     }
 
     _video = v;
-     resetPosition();
+    resetPosition();
 
     await _audioPlayer.setAudioSource(_playlist);
 
@@ -215,14 +224,31 @@ class Playing with ChangeNotifier {
     await clearQueue(); // Clear the existing queue
 
     if (videos.isNotEmpty) {
+      List<AudioSource> sources = [];
+
       for (var video in videos) {
-        await addToQueue(video); // Add each video to the queue
+        print(video.title ?? "none");
+        AudioSource audioSource = await createAudioSource(video);
+        _queue.add(video);
+        sources.add(audioSource);
       }
+
+      // Assign all sources at once
+      _playlist = ConcatenatingAudioSource(children: sources);
+      _video = videos.first;
+      await _audioPlayer.setAudioSource(_playlist);
+
+      print(_queue);
+      print(_playlist);
+
+      await play();
     }
 
     _isloading = false;
-    notifyListeners(); // Notify listeners that loading is complete and the queue has been updated
+    notifyListeners();
   }
+
+
 
   Future<void> next() async {
     if (_queue.isNotEmpty) {

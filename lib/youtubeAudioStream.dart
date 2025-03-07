@@ -12,6 +12,7 @@ import 'dart:ui';
 import 'favoriteUtils.dart';
 import 'thumbnailUtils.dart';
 import 'connectivityProvider.dart';
+
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {
   bool _isLiked = false;
@@ -47,6 +48,8 @@ class YoutubeAudioPlayer extends StatefulWidget {
 class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   bool _isInPlaylist = false; // Track playlist state
   bool _showLyrics = false; // Track lyrics visibility
+  double playbackSpeed = 1.0; // Tracks the current playback speed
+  bool _speedControlExpanded = false; // Track the speed control
 
   @override
   void initState() {
@@ -60,7 +63,8 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
-    final likeNotifier = context.watch<LikeNotifier>(); // Watch the LikeNotifier
+    final likeNotifier =
+        context.watch<LikeNotifier>(); // Watch the LikeNotifier
     bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
 
     // Set the current video in LikeNotifier
@@ -90,28 +94,28 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
       body: Stack(
         children: [
           // Blurred Background
-      Positioned.fill(
-      child:  (playing.video.localimage != null)
-          ? Image.file(
-        File(playing.video.localimage!), // Use Image.file for local paths
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      )
-          : (isOnline)
-          ? Image.network(
-        playing.video.thumbnails![0].url!,
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      )
-          : Image.asset(
-        'assets/icon.png', // Replace with your asset path
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      )
-          ),
+          Positioned.fill(
+              child: (playing.video.localimage != null)
+                  ? Image.file(
+                      File(playing
+                          .video.localimage!), // Use Image.file for local paths
+                      height: 100,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : (isOnline)
+                      ? Image.network(
+                          playing.video.thumbnails![0].url!,
+                          height: 100,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          'assets/icon.png', // Replace with your asset path
+                          height: 100,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )),
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -139,21 +143,21 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   ],
                   image: (playing.video.localimage != null)
                       ? DecorationImage(
-                    image: FileImage(File(playing.video.localimage!)),
-                    fit: BoxFit.cover,
-                  )
+                          image: FileImage(File(playing.video.localimage!)),
+                          fit: BoxFit.cover,
+                        )
                       : (isOnline)
-                      ? DecorationImage(
-                    image: NetworkImage(playing.video.thumbnails![0].url!),
-                    fit: BoxFit.cover,
-                  )
-                      : DecorationImage(
-                    image: AssetImage('assets/logo.png'),
-                    fit: BoxFit.cover,
-                  ),
+                          ? DecorationImage(
+                              image: NetworkImage(
+                                  playing.video.thumbnails![0].url!),
+                              fit: BoxFit.cover,
+                            )
+                          : DecorationImage(
+                              image: AssetImage('assets/logo.png'),
+                              fit: BoxFit.cover,
+                            ),
                 ),
-              )
-,
+              ),
               SizedBox(height: 30),
               // Song Title & Channel
               Padding(
@@ -161,14 +165,13 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 40,child: buildMarqueeVideoTitle(playing.video.title!))
-                    ,
+                    SizedBox(
+                        height: 40,
+                        child: buildMarqueeVideoTitle(playing.video.title!)),
                     SizedBox(height: 6),
                     Text(
                       playing.video.channelName!,
-                      style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.white70),
+                      style: TextStyle(fontSize: 16.0, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -180,15 +183,17 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                 children: [
                   Consumer<LikeNotifier>(
                       builder: (context, likeNotifier, child) {
-                        return _animatedButton(
-                          likeNotifier.isLiked ? Icons.favorite : Icons.favorite_border,
-                              () {
-                            likeNotifier.toggleLike();
-                          },
-                          28,
-                          color: likeNotifier.isLiked ? Colors.red : Colors.white,
-                        );
-                      }) ,
+                    return _animatedButton(
+                      likeNotifier.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      () {
+                        likeNotifier.toggleLike();
+                      },
+                      28,
+                      color: likeNotifier.isLiked ? Colors.red : Colors.white,
+                    );
+                  }),
                   // SizedBox(width: 20),
                   // _animatedButton(
                   //   _isInPlaylist ? Icons.playlist_add_check : Icons.playlist_add,
@@ -203,7 +208,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   SizedBox(width: 20),
                   _animatedButton(
                     Icons.lyrics,
-                        () {
+                    () {
                       setState(() {
                         _showLyrics = !_showLyrics;
                         fetchYoutubeClosedCaptions(playing.video.videoId!);
@@ -221,9 +226,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
                     playing.currentCaption,
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70),
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ),
               SizedBox(height: 20),
@@ -237,8 +240,10 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                         activeTrackColor: Colors.white,
                         inactiveTrackColor: Colors.white38,
                         thumbColor: Colors.white,
-                        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
-                        overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
+                        thumbShape:
+                            RoundSliderThumbShape(enabledThumbRadius: 8),
+                        overlayShape:
+                            RoundSliderOverlayShape(overlayRadius: 16),
                       ),
                       child: Slider(
                         min: 0,
@@ -250,18 +255,69 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: buildTimeDisplay(playing.position, playing.duration)
-                    ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: buildTimeDisplay(
+                            playing.position, playing.duration)),
                   ],
                 ),
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _speedControlExpanded
+                    ? Row(
+                        children: [
+                          Text("Speed", style: TextStyle(color: Colors.white)),
+                          Expanded(
+                            child: Slider(
+                              min: 0.5,
+                              max: 2.0,
+                              divisions: 6,
+                              value: playbackSpeed,
+                              activeColor: Colors.white,
+                              inactiveColor: Colors.white38,
+                              onChanged: (double value) {
+                                setState(() {
+                                  playbackSpeed = value;
+                                });
+                                playing.audioPlayer.setSpeed(value);
+                              },
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.expand_less, color: Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                _speedControlExpanded = false;
+                              });
+                            },
+                          ),
+                        ],
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _speedControlExpanded = true;
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.speed, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text("${playbackSpeed.toStringAsFixed(1)}x",
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      ),
               ),
               SizedBox(height: 30),
               // Playback Controls
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _animatedButton(Icons.shuffle, playing.toggleShuffle, 24, color: playing.isShuffling ? Colors.blue : Colors.white),
+                  _animatedButton(Icons.shuffle, playing.toggleShuffle, 24,
+                      color: playing.isShuffling ? Colors.blue : Colors.white),
                   SizedBox(width: 16),
                   _animatedButton(Icons.skip_previous, playing.previous, 32),
                   SizedBox(width: 16),
@@ -284,18 +340,32 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                         ],
                       ),
                       child: Icon(
-                        playing.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                        playing.isPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
                         size: 72,
                         color: Colors.white,
                       ),
                     ),
                   ),
                   SizedBox(width: 16),
-                  _animatedButton(Icons.skip_next, () {playing.next();}, 32),
+                  _animatedButton(Icons.skip_next, () {
+                    playing.next();
+                  }, 32),
                   SizedBox(width: 16),
-                  _animatedButton(playing.isLooping==0? Icons.repeat_rounded: playing.isLooping==1? Icons.repeat_one: Icons.repeat_rounded , () {
+                  _animatedButton(
+                      playing.isLooping == 0
+                          ? Icons.repeat_rounded
+                          : playing.isLooping == 1
+                              ? Icons.repeat_one
+                              : Icons.repeat_rounded, () {
                     playing.toggleLooping();
-                  }, 24,color:playing.isLooping==0? Colors.white: playing.isLooping==1? Colors.white: Colors.blue),
+                  }, 24,
+                      color: playing.isLooping == 0
+                          ? Colors.white
+                          : playing.isLooping == 1
+                              ? Colors.white
+                              : Colors.blue),
                 ],
               ),
             ],
@@ -306,7 +376,8 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   }
 
   // Helper function to create animated buttons
-  Widget _animatedButton(IconData icon, VoidCallback onPressed, double size, {Color color = Colors.white}) {
+  Widget _animatedButton(IconData icon, VoidCallback onPressed, double size,
+      {Color color = Colors.white}) {
     bool _isButtonPressed = false;
 
     return GestureDetector(
@@ -393,13 +464,18 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                         video.title!,
                         style: TextStyle(
                             color: isCurrent ? Colors.blue : Colors.white,
-                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal),
+                            fontWeight: isCurrent
+                                ? FontWeight.bold
+                                : FontWeight.normal),
                       ),
                       subtitle: Text(
                         video.channelName!,
                         style: TextStyle(
-                            color: isCurrent ? Colors.blue.shade200 : Colors.white70),
+                            color: isCurrent
+                                ? Colors.blue.shade200
+                                : Colors.white70),
                       ),
+
                       onTap: ()  {
                         playing.assign(video,false);
                         Navigator.pop(context);

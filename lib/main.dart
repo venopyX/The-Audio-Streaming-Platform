@@ -155,24 +155,33 @@ class Playing with ChangeNotifier {
     _isloading = true;
     await pause();
     notifyListeners();
-    AudioSource audioSource = await createAudioSource(v);
+
     if (clear) {
+      // Clear and replace the queue if `clear` is true
       _queue.clear();
+      AudioSource audioSource = await createAudioSource(v);
       _queue.add(v);
-      _playlist = await ConcatenatingAudioSource(children: [audioSource]);
+      _playlist = ConcatenatingAudioSource(children: [audioSource]);
+      await _audioPlayer.setAudioSource(_playlist);
+    } else {
+      // Play from existing playlist
+      int index = _queue.indexWhere((video) => video.videoId == v.videoId);
+      if (index != -1) {
+        await _audioPlayer.seek(Duration.zero, index: index);
+      } else {
+        print("Video not found in the playlist.");
+        return;
+      }
     }
 
     _video = v;
     resetPosition();
 
-    await _audioPlayer.setAudioSource(_playlist);
-
     _isloading = false;
     notifyListeners();
     await play();
-
-    notifyListeners();
   }
+
 
   Future<void> addToQueue(MyVideo v) async {
     if (_queue.isEmpty) {

@@ -1,6 +1,8 @@
 import 'dart:io';
 
-import 'package:audiobinge/MyVideo.dart';
+import 'package:audiobinge/downloadUtils.dart';
+
+import 'MyVideo.dart';
 
 import 'fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +10,7 @@ import 'main.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'favoriteUtils.dart';
-import 'package:youtube_scrape_api/models/video.dart';
 import 'thumbnailUtils.dart';
-import 'package:marquee/marquee.dart';
 import 'connectivityProvider.dart';
 
 // LikeNotifier provider
@@ -86,7 +86,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
           IconButton(
             icon: Icon(Icons.queue_music, color: Colors.white),
             onPressed: () {
-              _showQueue(context, playing);
+              _showQueue(context, playing,isOnline);
             },
           ),
         ],
@@ -408,7 +408,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   }
 
   // Show Queue Dialog with Currently Playing Highlighted
-  void _showQueue(BuildContext context, Playing playing) {
+  void _showQueue(BuildContext context, Playing playing,bool isOnline) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -439,10 +439,24 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     return ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          video.thumbnails![0].url!,
-                          width: 50,
+                        child:  (video.localimage != null)
+                            ? Image.file(
+                          File(video.localimage!), // Use Image.file for local paths
                           height: 50,
+                          width: 50,
+                          fit: BoxFit.cover,
+                        )
+                            : (isOnline)
+                            ? Image.network(
+                          video.thumbnails![0].url!,
+                          height: 50,
+                          width: 50,
+                          fit: BoxFit.cover,
+                        )
+                            : Image.asset(
+                          'assets/icon.png', // Replace with your asset path
+                          height: 50,
+                          width: 50,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -461,8 +475,9 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                                 ? Colors.blue.shade200
                                 : Colors.white70),
                       ),
-                      onTap: () {
-                        playing.assign(video, false, false);
+
+                      onTap: ()  {
+                        playing.assign(video,false);
                         Navigator.pop(context);
                       },
                     );

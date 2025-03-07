@@ -62,27 +62,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      if (_videos.isNotEmpty)
-                        ElevatedButton.icon(
-                          onPressed: () => playing.setQueue(_videos, false),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                          ),
-                          icon: Icon(Icons.play_arrow, color: Colors.white),
-                          label: Text(
-                            'Play All',
-                            style: GoogleFonts.roboto(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+
                     ],
                   ),
                 ),

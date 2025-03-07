@@ -61,7 +61,7 @@ class _VideoComponentState extends State<VideoComponent> {
 
           return GestureDetector(
             onTap: () {
-              playing.assign(widget.video, true, _isDownloaded);
+              playing.assign(widget.video, true);
             },
             child: Container(
               height: 100,
@@ -123,7 +123,7 @@ class _VideoComponentState extends State<VideoComponent> {
                                     ),
                                   );
                                 } else {
-                                  playing.addToQueue(widget.video, false);
+                                  playing.addToQueue(widget.video);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('Added to Queue'),

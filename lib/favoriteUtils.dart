@@ -55,6 +55,7 @@ Future<bool> saveToFavorites(MyVideo video) async {
       'weight': thumbnail?.width,
       'localaudio': localaudio
     });
+
     print("MyVideo saved to favorites successfully.");
     return true; // Indicate success
   } catch (e) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audiobinge/channelVideosPage.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,7 @@ class DownloadService {
   final Map<String, double> _downloadProgress = {};
   final Map<String, bool> _downloadingState = {};
   final StreamController<Map<String, double>> _progressStreamController =
-  StreamController<Map<String, double>>.broadcast();
+      StreamController<Map<String, double>>.broadcast();
 
   Stream<Map<String, double>> get progressStream =>
       _progressStreamController.stream;
@@ -25,7 +26,7 @@ class DownloadService {
     return _downloadProgress[videoId] ?? 0.0;
   }
 
-  bool getDownloadingState(String videoId){
+  bool getDownloadingState(String videoId) {
     return _downloadingState[videoId] ?? false;
   }
 
@@ -34,7 +35,7 @@ class DownloadService {
     downloadAndSaveMetaData(context, video, (progress) {
       _downloadProgress[video.videoId!] = progress;
       _progressStreamController.add(_downloadProgress);
-      if (progress >= 1.0){
+      if (progress >= 1.0) {
         _downloadingState[video.videoId!] = false;
       }
     });
@@ -86,7 +87,9 @@ class _VideoComponentState extends State<VideoComponent> {
           return CircularProgressIndicator(); // Show loading indicator
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
-        } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+        } else if (!snapshot.hasData ||
+            snapshot.data == null ||
+            snapshot.data!.isEmpty) {
           return Text('No data available');
         } else {
           bool _isLiked = (snapshot.data![0] ?? false);
@@ -98,10 +101,12 @@ class _VideoComponentState extends State<VideoComponent> {
               final progress = progressSnapshot.hasData
                   ? progressSnapshot.data![widget.video.videoId!] ?? 0.0
                   : 0.0;
-              final downloading = downloadService.getDownloadingState(widget.video.videoId!);
+              final downloading =
+                  downloadService.getDownloadingState(widget.video.videoId!);
 
               // Check if this video is the currently playing video
-              final isCurrentVideo = playing.video.videoId == widget.video.videoId;
+              final isCurrentVideo =
+                  playing.video.videoId == widget.video.videoId;
 
               return GestureDetector(
                 onTap: () {
@@ -114,9 +119,10 @@ class _VideoComponentState extends State<VideoComponent> {
                     borderRadius: BorderRadius.circular(15),
                     border: isCurrentVideo
                         ? Border.all(
-                      color: AppColors.primaryColor, // Highlight border if current video
-                      width: 2,
-                    )
+                            color: AppColors
+                                .primaryColor, // Highlight border if current video
+                            width: 2,
+                          )
                         : null,
                   ),
                   child: Column(
@@ -131,24 +137,24 @@ class _VideoComponentState extends State<VideoComponent> {
                             ),
                             child: (widget.video.localimage != null)
                                 ? Image.file(
-                              File(widget.video.localimage!),
-                              height: 100,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            )
+                                    File(widget.video.localimage!),
+                                    height: 100,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
                                 : (isOnline)
-                                ? Image.network(
-                              widget.video.thumbnails![0].url!,
-                              height: 100,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            )
-                                : Image.asset(
-                              'assets/icon.png',
-                              height: 100,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
+                                    ? Image.network(
+                                        widget.video.thumbnails![0].url!,
+                                        height: 100,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.asset(
+                                        'assets/icon.png',
+                                        height: 100,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
                           ),
                           Positioned(
                             top: -4,
@@ -163,7 +169,8 @@ class _VideoComponentState extends State<VideoComponent> {
                                 switch (value) {
                                   case 'add_to_queue':
                                     if (playing.queue.contains(widget.video)) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text('Already in Queue'),
                                           backgroundColor: Colors.white,
@@ -174,7 +181,8 @@ class _VideoComponentState extends State<VideoComponent> {
                                       );
                                     } else {
                                       playing.addToQueue(widget.video);
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text('Added to Queue'),
                                           backgroundColor: Colors.white,
@@ -210,15 +218,16 @@ class _VideoComponentState extends State<VideoComponent> {
                                     );
                                     break;
                                   case 'add_to_downloads':
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Download started'),
-                                          backgroundColor: Colors.white,
-                                          elevation: 10,
-                                          behavior: SnackBarBehavior.floating,
-                                          margin: EdgeInsets.all(5),
-                                        ));
-                                    downloadService.startDownload(context, widget.video);
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text('Download started'),
+                                      backgroundColor: Colors.white,
+                                      elevation: 10,
+                                      behavior: SnackBarBehavior.floating,
+                                      margin: EdgeInsets.all(5),
+                                    ));
+                                    downloadService.startDownload(
+                                        context, widget.video);
                                     break;
                                   case 'remove_from_downloads':
                                     deleteDownload(widget.video);
@@ -242,22 +251,22 @@ class _VideoComponentState extends State<VideoComponent> {
                                   ),
                                   _isLiked
                                       ? PopupMenuItem<String>(
-                                    value: 'remove_from_favorites',
-                                    child: Text('Remove from favorites'),
-                                  )
+                                          value: 'remove_from_favorites',
+                                          child: Text('Remove from favorites'),
+                                        )
                                       : PopupMenuItem<String>(
-                                    value: 'add_to_favorites',
-                                    child: Text('Add to favorites'),
-                                  ),
+                                          value: 'add_to_favorites',
+                                          child: Text('Add to favorites'),
+                                        ),
                                   _isDownloaded
                                       ? PopupMenuItem<String>(
-                                    value: 'remove_from_downloads',
-                                    child: Text('Remove from downloads'),
-                                  )
+                                          value: 'remove_from_downloads',
+                                          child: Text('Remove from downloads'),
+                                        )
                                       : PopupMenuItem<String>(
-                                    value: 'add_to_downloads',
-                                    child: Text('Download'),
-                                  ),
+                                          value: 'add_to_downloads',
+                                          child: Text('Download'),
+                                        ),
                                 ];
                               },
                             ),
@@ -300,7 +309,8 @@ class _VideoComponentState extends State<VideoComponent> {
                         LinearProgressIndicator(
                           value: progress,
                           backgroundColor: Colors.black87,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primaryColor),
                         ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -316,11 +326,27 @@ class _VideoComponentState extends State<VideoComponent> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(
-                              widget.video.channelName ?? 'Unknown channel',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(color: Colors.grey),
+                            GestureDetector(
+                              behavior: HitTestBehavior
+                                  .opaque, // Makes the widget capture the tap
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChannelVideosPage(
+                                      videoId: widget.video.videoId!,
+                                      channelName:
+                                          widget.video.channelName ?? '',
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                widget.video.channelName ?? 'Unknown channel',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             ),
                           ],
                         ),

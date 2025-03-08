@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:audiobinge/downloadUtils.dart';
 import 'package:audiobinge/downloadsPage.dart';
+import 'package:audiobinge/videoComponent.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import 'fetchYoutubeStreamUrl.dart';
@@ -27,6 +28,7 @@ void main() async {
     ChangeNotifierProvider(create: (_) => LikeNotifier()),
     ChangeNotifierProvider(create: (_) => Playing()),
     ChangeNotifierProvider(create: (_) => NetworkProvider()),
+    ChangeNotifierProvider(create: (_) => DownloadService()),
   ], child: const MyApp()));
 }
 

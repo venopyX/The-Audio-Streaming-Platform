@@ -99,7 +99,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search...',
-                hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                hintStyle: TextStyle(color: Colors.grey.withValues(alpha: 0.8)),
                 filled: true,
                 fillColor: Colors.grey[900],
                 border: OutlineInputBorder(

@@ -1,8 +1,6 @@
-import 'package:audiobinge/favoriteUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:youtube_scrape_api/models/video.dart';
 import 'videoComponent.dart';
 import 'package:shimmer/shimmer.dart';
 import 'main.dart';
@@ -10,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'downloadUtils.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
-import 'connectivityProvider.dart';
 
 class DownloadScreen extends StatefulWidget {
   const DownloadScreen({super.key});

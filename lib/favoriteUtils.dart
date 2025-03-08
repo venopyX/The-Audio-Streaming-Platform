@@ -1,4 +1,5 @@
 import 'package:audiobinge/MyVideo.dart';
+import 'package:audiobinge/fetchYoutubeStreamUrl.dart';
 import 'package:localstore/localstore.dart';
 import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:youtube_scrape_api/models/video.dart';
@@ -27,7 +28,9 @@ Future<List<MyVideo>> getFavorites() async {
           channelName: value['channelName'],
           views: value['views'],
           uploadDate: value['uploadDate'],
-          thumbnails: thumbnails);
+          thumbnails: thumbnails,
+          localaudio: value['localaudio']
+      );
       favoriteList.add(video);
     }
   }
@@ -38,7 +41,7 @@ Future<List<MyVideo>> getFavorites() async {
 Future<bool> saveToFavorites(MyVideo video) async {
   final id = video.videoId;
   final thumbnail = video.thumbnails?.isNotEmpty == true ? video.thumbnails!.first : null;
-
+  final localaudio = await fetchYoutubeStreamUrl(video.videoId!);
   try {
     await db.collection('favorites').doc(id).set({
       'videoId': video.videoId,
@@ -50,6 +53,7 @@ Future<bool> saveToFavorites(MyVideo video) async {
       'url': thumbnail?.url,
       'height': thumbnail?.height,
       'weight': thumbnail?.width,
+      'localaudio': localaudio
     });
     print("MyVideo saved to favorites successfully.");
     return true; // Indicate success

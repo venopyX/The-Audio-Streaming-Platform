@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:audiobinge/downloadUtils.dart';
 import 'package:audiobinge/downloadsPage.dart';
+import 'package:audiobinge/favoriteUtils.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import 'fetchYoutubeStreamUrl.dart';
@@ -340,7 +341,6 @@ class Playing with ChangeNotifier {
   Future<AudioSource> createAudioSource(MyVideo v) async {
     var local = await isDownloaded(v);
     if (local) {
-      print(v.localaudio);
 
       return AudioSource.uri(
         Uri.file(v.localaudio!),
@@ -354,7 +354,12 @@ class Playing with ChangeNotifier {
         ),
       );
     } else {
-      var url = await fetchYoutubeStreamUrl(v.videoId!);
+      var url = "hello";
+      if(await isFavorites(v)){
+        url = v.localaudio!;
+      }else {
+        url = await fetchYoutubeStreamUrl(v.videoId!);
+      }
 
       return AudioSource.uri(
         Uri.parse(url),

@@ -9,7 +9,7 @@
 ✅ **Battery & Data Efficiency** – Reduce battery drain and data usage by eliminating video playback.  
 ✅ **Intuitive & Lightweight UI** – Navigate effortlessly with a clean, user-friendly interface.  
 ✅ **Favorites & Queue Management** – Save your favorite audio tracks and create custom playlists.  
-🚀 **Offline Playback (Upcoming Feature)** – We're working on enabling offline listening!  
+✅ **Offline Playback** – Enjoy your content offline.
 
 ---
 

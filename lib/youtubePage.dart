@@ -1,4 +1,6 @@
+// File: lib/youtubePage.dart
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
@@ -30,6 +32,10 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
     fetchTrendingYoutube();
   }
 
+  Future<void> _handleRefresh() async {
+    fetchTrendingYoutube();
+  }
+
   void fetchTrendingYoutube() async {
     setState(() {
       _isLoading = true;
@@ -57,21 +63,17 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
       );
       return;
     }
-
     setState(() {
       _isSearching = true;
     });
-
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     List videos = await youtubeDataApi.fetchSearchVideo(query);
     List<Video> temp = videos.whereType<Video>().toList();
-
     List<MyVideo> processedVideos = [];
     for (var videoData in temp) {
       MyVideo videoWithHighestThumbnail = processVideoThumbnails(videoData);
       processedVideos.add(videoWithHighestThumbnail);
     }
-
     setState(() {
       _videos = processedVideos;
       _isSearching = false;
@@ -110,7 +112,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color:AppColors.primaryColor , width: 1.5),
+                  borderSide: BorderSide(color: AppColors.primaryColor, width: 1.5),
                 ),
                 contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 prefixIcon: Padding(
@@ -166,32 +168,37 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
           ),
           Expanded(
             child: isOnline
-                ? GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10.0,
-                mainAxisSpacing: 20.0,
-              ),
-              padding: EdgeInsets.all(16),
-              itemCount: _isLoading ? 10 : _videos.length,
-              itemBuilder: (context, index) {
-                if (_isLoading) {
-                  return Shimmer.fromColors(
-                    baseColor: Colors.grey[800]!,
-                    highlightColor: Colors.grey[700]!,
-                    child: Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(15),
+                ? LiquidPullToRefresh(
+              onRefresh: _handleRefresh,
+              color: AppColors.primaryColor,
+              animSpeedFactor: 3,
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 20.0,
+                ),
+                padding: EdgeInsets.all(16),
+                itemCount: _isLoading ? 10 : _videos.length,
+                itemBuilder: (context, index) {
+                  if (_isLoading) {
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[800]!,
+                      highlightColor: Colors.grey[700]!,
+                      child: Container(
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
-                    ),
-                  );
-                } else {
-                  final video = _videos[index];
-                  return VideoComponent(video: video);
-                }
-              },
+                    );
+                  } else {
+                    final video = _videos[index];
+                    return VideoComponent(video: video);
+                  }
+                },
+              ),
             )
                 : Center(
               child: Column(
@@ -203,14 +210,6 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                     "You're offline. Go to downloads.",
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
-                  // Add a button to navigate to downloads if you have a downloads screen
-                  // Example:
-                  // ElevatedButton(
-                  //   onPressed: () {
-                  //     Navigator.push(context, MaterialPageRoute(builder: (context) => DownloadsScreen()));
-                  //   },
-                  //   child: Text('Go to Downloads'),
-                  // ),
                 ],
               ),
             ),

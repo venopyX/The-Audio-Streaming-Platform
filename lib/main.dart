@@ -17,6 +17,7 @@ import 'MyVideo.dart';
 import 'colors.dart';
 import 'videoComponent.dart';
 import 'favoriteUtils.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await JustAudioBackground.init(
@@ -38,10 +39,9 @@ class Playing with ChangeNotifier {
   MyVideo _video = MyVideo();
   List<MyVideo> _queue = [];
   ConcatenatingAudioSource _playlist =
-  ConcatenatingAudioSource(children: []); // Initialize playlist
+      ConcatenatingAudioSource(children: []); // Initialize playlist
   List<ytex.ClosedCaption> captions = [];
   String currentCaption = "no caption fo this media";
-
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
@@ -133,7 +133,6 @@ class Playing with ChangeNotifier {
       }
     });
 
-
     _audioPlayer.currentIndexStream.listen((index) async {
       if (index != null && index >= 0 && index < _queue.length) {
         _video = _queue[index];
@@ -194,7 +193,6 @@ class Playing with ChangeNotifier {
     notifyListeners();
     await play();
   }
-
 
   Future<void> addToQueue(MyVideo v) async {
     if (_queue.isEmpty) {
@@ -270,8 +268,6 @@ class Playing with ChangeNotifier {
     notifyListeners();
   }
 
-
-
   Future<void> next() async {
     if (_queue.isNotEmpty) {
       _isloading = true;
@@ -345,11 +341,13 @@ class Playing with ChangeNotifier {
     _isPlaying = true;
     notifyListeners();
   }
+
   Future<void> stop() async {
     await _audioPlayer.stop();
     _isPlaying = false;
     notifyListeners();
   }
+
   Future<void> seekAudio(Duration position) async {
     await _audioPlayer.seek(position);
   }
@@ -357,7 +355,6 @@ class Playing with ChangeNotifier {
   Future<AudioSource> createAudioSource(MyVideo v) async {
     var local = await isDownloaded(v);
     if (local) {
-
       return AudioSource.uri(
         Uri.file(v.localaudio!),
         tag: MediaItem(
@@ -371,9 +368,9 @@ class Playing with ChangeNotifier {
       );
     } else {
       var url = "hello";
-      if(await isFavorites(v)){
+      if (await isFavorites(v)) {
         url = v.localaudio!;
-      }else {
+      } else {
         url = await fetchYoutubeStreamUrl(v.videoId!);
       }
 
@@ -475,8 +472,8 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom:
-                    kBottomNavigationBarHeight +5 , // Position above the bottom nav
+                bottom: kBottomNavigationBarHeight +
+                    5, // Position above the bottom nav
                 child: Dismissible(
                   key: Key("bottomPlayer"),
                   direction: DismissDirection.startToEnd,
@@ -535,6 +532,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: false, // Hide the back button
       title: Row(
         children: [
           // App Logo

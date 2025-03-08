@@ -3,6 +3,7 @@ import 'package:audiobinge/downloadsPage.dart';
 import 'package:audiobinge/favoritePage.dart';
 import 'package:audiobinge/main.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'MyVideo.dart';
 import 'videoComponent.dart';
@@ -11,8 +12,13 @@ import 'fetchYoutubeStreamUrl.dart';
 class ChannelVideosPage extends StatefulWidget {
   final String videoId;
   final String channelName;
+  static String channelAvatar =
+      'https://t3.ftcdn.net/jpg/03/53/11/00/360_F_353110097_nbpmfn9iHlxef4EDIhXB1tdTD0lcWhG9.jpg';
   const ChannelVideosPage(
-      {super.key, required this.videoId, required this.channelName});
+      {super.key,
+      channelAvatar,
+      required this.videoId,
+      required this.channelName});
 
   @override
   _ChannelVideosPageState createState() => _ChannelVideosPageState();
@@ -54,8 +60,11 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
     });
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index, BuildContext context) {
     setState(() {
+      if (_selectedIndex == 0 && index == 0) {
+        Navigator.pop(context);
+      }
       _selectedIndex = index;
     });
   }
@@ -67,16 +76,65 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
             ? Center(
                 child: Text('No videos found.',
                     style: TextStyle(fontSize: 20, color: Colors.white)))
-            : GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 20.0,
-                ),
-                itemCount: channelVideos.length,
-                itemBuilder: (context, index) {
-                  return VideoComponent(video: channelVideos[index]);
-                },
+            : Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(15),
+                        bottomRight: Radius.circular(15),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundImage:
+                                  NetworkImage(ChannelVideosPage.channelAvatar),
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              '${widget.channelName} Videos',
+                              style: GoogleFonts.roboto(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10.0,
+                        mainAxisSpacing: 20.0,
+                      ),
+                      itemCount: channelVideos.length,
+                      itemBuilder: (context, index) {
+                        return VideoComponent(video: channelVideos[index]);
+                      },
+                    ),
+                  ),
+                ],
               ));
   }
 
@@ -84,7 +142,7 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.channelName} Videos')),
+      appBar: CustomAppBar(),
       body: Stack(
         children: [
           AnimatedSwitcher(
@@ -124,7 +182,7 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
             label: 'Downloads',
           ),
         ],
-        onTap: _onItemTapped,
+        onTap: (index) => _onItemTapped(index, context),
       ),
     );
   }

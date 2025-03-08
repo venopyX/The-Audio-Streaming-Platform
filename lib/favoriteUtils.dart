@@ -2,7 +2,6 @@ import 'package:audiobinge/MyVideo.dart';
 import 'package:audiobinge/fetchYoutubeStreamUrl.dart';
 import 'package:localstore/localstore.dart';
 import 'package:youtube_scrape_api/models/thumbnail.dart';
-import 'package:youtube_scrape_api/models/video.dart';
 
 
 final db = Localstore.instance;

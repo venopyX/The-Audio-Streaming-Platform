@@ -2,7 +2,7 @@ import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 class MyVideo extends Video {
   final String? localimage;
-  final String? localaudio;
+  late final String? localaudio;
   // Add more custom fields as needed
 
   MyVideo({

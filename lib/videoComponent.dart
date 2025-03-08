@@ -1,14 +1,49 @@
+import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:provider/provider.dart';
 import 'downloadUtils.dart';
-import 'main.dart';
+import 'main.dart'; // Replace with the actual path
 import 'youtubeAudioStream.dart';
 import 'favoriteUtils.dart';
 import 'connectivityProvider.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
+
+class DownloadService {
+  final Map<String, double> _downloadProgress = {};
+  final Map<String, bool> _downloadingState = {};
+  final StreamController<Map<String, double>> _progressStreamController =
+  StreamController<Map<String, double>>.broadcast();
+
+  Stream<Map<String, double>> get progressStream =>
+      _progressStreamController.stream;
+
+  double getProgress(String videoId) {
+    return _downloadProgress[videoId] ?? 0.0;
+  }
+
+  bool getDownloadingState(String videoId){
+    return _downloadingState[videoId] ?? false;
+  }
+
+  Future<void> startDownload(BuildContext context, MyVideo video) async {
+    _downloadingState[video.videoId!] = true;
+    downloadAndSaveMetaData(context, video, (progress) {
+      _downloadProgress[video.videoId!] = progress;
+      _progressStreamController.add(_downloadProgress);
+      if (progress >= 1.0){
+        _downloadingState[video.videoId!] = false;
+      }
+    });
+  }
+
+  void dispose() {
+    _progressStreamController.close();
+  }
+}
 
 class VideoComponent extends StatefulWidget {
   final MyVideo video;
@@ -21,8 +56,7 @@ class VideoComponent extends StatefulWidget {
 
 class _VideoComponentState extends State<VideoComponent> {
   late Future<List<bool>> _future;
-  double _downloadProgress = 0.0;
-  bool _isDownloading = false;
+  StreamSubscription? _downloadSubscription;
 
   @override
   void initState() {
@@ -33,30 +67,23 @@ class _VideoComponentState extends State<VideoComponent> {
     ]);
   }
 
-  void _handleDownloadProgress(double progress) {
-    setState(() {
-      _downloadProgress = progress;
-      _isDownloading = progress < 1.0;
-    });
+  @override
+  void dispose() {
+    _downloadSubscription?.cancel(); // Cancel any ongoing download subscription
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final playing = Provider.of<Playing>(context, listen: false);
     bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
+    final downloadService = Provider.of<DownloadService>(context);
 
     return FutureBuilder<List<bool>>(
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            alignment: Alignment.center,
-            child: SizedBox(
-              height: 30,
-              width: 30,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
+          return CircularProgressIndicator(); // Show loading indicator
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
@@ -65,68 +92,176 @@ class _VideoComponentState extends State<VideoComponent> {
           bool _isLiked = (snapshot.data![0] ?? false);
           bool _isDownloaded = (snapshot.data![1] ?? false);
 
-          return GestureDetector(
-            onTap: () {
-              playing.assign(widget.video, true);
-            },
-            child: Container(
-              // Fixed height container to guarantee no overflow
-              height: 165,
-              child: Card(
-                margin: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                color: Colors.black87,
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Thumbnail with fixed ratio
-                    Container(
-                      height: 90,
-                      width: double.infinity,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          // Thumbnail image
-                          (widget.video.localimage != null)
-                              ? Image.file(
-                            File(widget.video.localimage!),
-                            fit: BoxFit.cover,
-                          )
-                              : (isOnline)
-                              ? Image.network(
-                            widget.video.thumbnails![0].url!,
-                            fit: BoxFit.cover,
-                          )
-                              : Image.asset(
-                            'assets/icon.png',
-                            fit: BoxFit.cover,
-                          ),
+          return StreamBuilder<Map<String, double>>(
+            stream: downloadService.progressStream,
+            builder: (context, progressSnapshot) {
+              final progress = progressSnapshot.hasData
+                  ? progressSnapshot.data![widget.video.videoId!] ?? 0.0
+                  : 0.0;
+              final downloading = downloadService.getDownloadingState(widget.video.videoId!);
 
-                          // Menu button
+              // Check if this video is the currently playing video
+              final isCurrentVideo = playing.video.videoId == widget.video.videoId;
+
+              return GestureDetector(
+                onTap: () {
+                  playing.assign(widget.video, true);
+                },
+                child: Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(15),
+                    border: isCurrentVideo
+                        ? Border.all(
+                      color: AppColors.primaryColor, // Highlight border if current video
+                      width: 2,
+                    )
+                        : null,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(15),
+                              bottom: Radius.circular(15),
+                            ),
+                            child: (widget.video.localimage != null)
+                                ? Image.file(
+                              File(widget.video.localimage!),
+                              height: 100,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                                : (isOnline)
+                                ? Image.network(
+                              widget.video.thumbnails![0].url!,
+                              height: 100,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                                : Image.asset(
+                              'assets/icon.png',
+                              height: 100,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                           Positioned(
-                            top: 0,
-                            right: 0,
+                            top: -4,
+                            right: -4,
                             child: PopupMenuButton<String>(
-                              padding: EdgeInsets.zero,
                               icon: Icon(
                                 Icons.more_vert,
                                 color: Colors.white,
                                 size: 20,
                               ),
                               onSelected: (String value) {
-                                // Popup menu handler logic
+                                switch (value) {
+                                  case 'add_to_queue':
+                                    if (playing.queue.contains(widget.video)) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Already in Queue'),
+                                          backgroundColor: Colors.white,
+                                          elevation: 10,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(5),
+                                        ),
+                                      );
+                                    } else {
+                                      playing.addToQueue(widget.video);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Added to Queue'),
+                                          backgroundColor: Colors.white,
+                                          elevation: 10,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(5),
+                                        ),
+                                      );
+                                    }
+                                    break;
+                                  case 'add_to_favorites':
+                                    saveToFavorites(widget.video);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Added to favorites'),
+                                        backgroundColor: Colors.white,
+                                        elevation: 10,
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: EdgeInsets.all(5),
+                                      ),
+                                    );
+                                    break;
+                                  case 'remove_from_favorites':
+                                    removeFavorites(widget.video);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Removed from favorites'),
+                                        backgroundColor: Colors.white,
+                                        elevation: 10,
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: EdgeInsets.all(5),
+                                      ),
+                                    );
+                                    break;
+                                  case 'add_to_downloads':
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Download started'),
+                                          backgroundColor: Colors.white,
+                                          elevation: 10,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(5),
+                                        ));
+                                    downloadService.startDownload(context, widget.video);
+                                    break;
+                                  case 'remove_from_downloads':
+                                    deleteDownload(widget.video);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Removed from downloads'),
+                                        backgroundColor: Colors.white,
+                                        elevation: 10,
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: EdgeInsets.all(5),
+                                      ),
+                                    );
+                                    break;
+                                }
                               },
                               itemBuilder: (BuildContext context) {
-                                // Menu items
-                                return [];
+                                return [
+                                  PopupMenuItem<String>(
+                                    value: 'add_to_queue',
+                                    child: Text('Add to Queue'),
+                                  ),
+                                  _isLiked
+                                      ? PopupMenuItem<String>(
+                                    value: 'remove_from_favorites',
+                                    child: Text('Remove from favorites'),
+                                  )
+                                      : PopupMenuItem<String>(
+                                    value: 'add_to_favorites',
+                                    child: Text('Add to favorites'),
+                                  ),
+                                  _isDownloaded
+                                      ? PopupMenuItem<String>(
+                                    value: 'remove_from_downloads',
+                                    child: Text('Remove from downloads'),
+                                  )
+                                      : PopupMenuItem<String>(
+                                    value: 'add_to_downloads',
+                                    child: Text('Download'),
+                                  ),
+                                ];
                               },
                             ),
                           ),
-
-                          // Duration indicator
                           if (widget.video.duration != null &&
                               widget.video.duration!.isNotEmpty)
                             Positioned(
@@ -134,7 +269,7 @@ class _VideoComponentState extends State<VideoComponent> {
                               right: 8,
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                    horizontal: 6, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withOpacity(0.7),
                                   borderRadius: BorderRadius.circular(8),
@@ -143,64 +278,58 @@ class _VideoComponentState extends State<VideoComponent> {
                                   widget.video.duration!,
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 10,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
+                          if (isCurrentVideo) // Show play icon if current video
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Icon(
+                                Icons.play_arrow,
+                                color: AppColors.primaryColor,
+                                size: 24,
+                              ),
+                            ),
                         ],
                       ),
-                    ),
-
-                    // Progress indicator
-                    if (_isDownloading)
-                      SizedBox(
-                        height: 2,
-                        child: LinearProgressIndicator(
-                          value: _downloadProgress,
-                          backgroundColor: Colors.grey[800],
+                      if (downloading)
+                        LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.black87,
                           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
                         ),
-                      ),
-
-                    // Text content in an Expanded to use remaining space
-                    Expanded(
-                      child: Padding(
+                      Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: Text(
-                                widget.video.title ?? 'No title',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
+                            Text(
+                              widget.video.title ?? 'No title',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 2),
                             Text(
                               widget.video.channelName ?? 'Unknown channel',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 10,
-                              ),
+                              style: TextStyle(color: Colors.grey),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         }
       },

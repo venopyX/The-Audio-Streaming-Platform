@@ -18,14 +18,6 @@ Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video,void Fun
   if(audiopath != "none"){
       await saveToDownloads(video, audiopath,imagepath);
   }
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content:  Text('download of ${video.title} done'),
-      duration:Duration(seconds: 3),
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.white,
-    ),
-  );
 
 }
 Future<String> downloadAudio(String id, String fileName,BuildContext context,void Function(double progress) progressCallback) async {

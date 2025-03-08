@@ -18,6 +18,7 @@ import 'connectivityProvider.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
 import 'connectivityProvider.dart';
+import 'videoComponent.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ void main() async {
     ChangeNotifierProvider(create: (_) => LikeNotifier()),
     ChangeNotifierProvider(create: (_) => Playing()),
     ChangeNotifierProvider(create: (_) => NetworkProvider()),
+    Provider<DownloadService>(create: (context) => DownloadService()),
   ], child: const MyApp()));
 }
 

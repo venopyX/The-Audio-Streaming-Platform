@@ -100,6 +100,9 @@ class _VideoComponentState extends State<VideoComponent> {
                   : 0.0;
               final downloading = downloadService.getDownloadingState(widget.video.videoId!);
 
+              // Check if this video is the currently playing video
+              final isCurrentVideo = playing.video.videoId == widget.video.videoId;
+
               return GestureDetector(
                 onTap: () {
                   playing.assign(widget.video, true);
@@ -109,6 +112,12 @@ class _VideoComponentState extends State<VideoComponent> {
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(15),
+                    border: isCurrentVideo
+                        ? Border.all(
+                      color: AppColors.primaryColor, // Highlight border if current video
+                      width: 2,
+                    )
+                        : null,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,6 +282,16 @@ class _VideoComponentState extends State<VideoComponent> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                              ),
+                            ),
+                          if (isCurrentVideo) // Show play icon if current video
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Icon(
+                                Icons.play_arrow,
+                                color: AppColors.primaryColor,
+                                size: 24,
                               ),
                             ),
                         ],

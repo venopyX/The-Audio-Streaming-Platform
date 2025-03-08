@@ -7,12 +7,13 @@ import 'fetchYoutubeStreamUrl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytex;
+import 'providers/medialProvider.dart';
 import 'youtubePage.dart';
 import 'favoritePage.dart';
 import 'bottomPlayer.dart';
 import 'package:just_audio/just_audio.dart';
 import 'youtubeAudioStream.dart';
-import 'connectivityProvider.dart';
+import 'providers/connectivityProvider.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
 import 'videoComponent.dart';
@@ -28,6 +29,7 @@ void main() async {
     ChangeNotifierProvider(create: (_) => LikeNotifier()),
     ChangeNotifierProvider(create: (_) => Playing()),
     ChangeNotifierProvider(create: (_) => NetworkProvider()),
+    ChangeNotifierProvider<MediaProvider>(create: (_) => MediaProvider()),
     Provider<DownloadService>(create: (context) => DownloadService()),
   ], child: const MyApp()));
 }
@@ -84,7 +86,10 @@ class Playing with ChangeNotifier {
     _isPlayerVisible = true;
     notifyListeners();
   }
-
+  void clear() {
+    _video = MyVideo();
+    notifyListeners();
+  }
   void setIsPlaying(bool isit) {
     if (isit) {
       play();
@@ -420,21 +425,28 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class YouTubeTwitchTabs extends StatefulWidget {
-  const YouTubeTwitchTabs({super.key});
+  final int initialTabIndex;
+
+  const YouTubeTwitchTabs({super.key, this.initialTabIndex = 0});
 
   @override
   _YouTubeTwitchTabsState createState() => _YouTubeTwitchTabsState();
 }
 
 class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   final List<Widget> _pages = [
     YoutubeScreen(),
     FavoriteScreen(),
     DownloadScreen()
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTabIndex;
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -459,15 +471,9 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
         child: Stack(
           children: [
             // Main content with fade transition
-            AnimatedSwitcher(
-              duration: Duration(milliseconds: 300),
-              child: _pages[_selectedIndex],
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
+            IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
             ),
 
             // BottomPlayer positioned above the bottom navigation
@@ -475,14 +481,14 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom:
-                    kBottomNavigationBarHeight +5 , // Position above the bottom nav
+                bottom: kBottomNavigationBarHeight + 5,
                 child: Dismissible(
                   key: Key("bottomPlayer"),
                   direction: DismissDirection.startToEnd,
-                  onDismissed: (_) {
+                  onDismissed: (direction) {
                     playing.hidePlayer();
                     playing.stop();
+                    context.read<Playing>().clear();
                   },
                   child: BottomPlayer(),
                 ),

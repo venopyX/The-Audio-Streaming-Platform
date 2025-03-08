@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'favoriteUtils.dart';
 import 'thumbnailUtils.dart';
-import 'connectivityProvider.dart';
+import 'providers/connectivityProvider.dart';
 
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {

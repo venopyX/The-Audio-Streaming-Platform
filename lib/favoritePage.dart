@@ -1,13 +1,13 @@
-import 'package:audiobinge/favoriteUtils.dart';
+// File: lib/favoritePage.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'videoComponent.dart';
-import 'package:shimmer/shimmer.dart';
-import 'main.dart';
-import 'package:provider/provider.dart';
-import 'connectivityProvider.dart';
 import 'MyVideo.dart';
+import 'providers/connectivityProvider.dart';
+import 'main.dart';
+import 'providers/medialProvider.dart';
+import 'videoComponent.dart';
 import 'colors.dart';
 
 class FavoriteScreen extends StatefulWidget {
@@ -17,9 +17,8 @@ class FavoriteScreen extends StatefulWidget {
   _FavoriteScreenState createState() => _FavoriteScreenState();
 }
 
-class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProviderStateMixin {
-  List<MyVideo> _videos = [];
-  bool _isLoading = false;
+class _FavoriteScreenState extends State<FavoriteScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -34,7 +33,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
       parent: _animationController,
       curve: Curves.easeInOut,
     );
-    fetchFavorites();
     _animationController.forward();
   }
 
@@ -44,26 +42,18 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
     super.dispose();
   }
 
-  Future<void> fetchFavorites() async {
-    setState(() {
-      _isLoading = true;
-    });
-    List<MyVideo> videos = await getFavorites();
-    setState(() {
-      _videos = videos;
-      _isLoading = false;
-    });
-  }
-
   Future<void> _handleRefresh() async {
-    await fetchFavorites();
-    return Future.value();
+    // In this updated implementation, the provider notifies changes automatically.
+    // Perform additional refresh logic if needed.
+    return;
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen to the favorites list directly from MediaProvider.
+    final favorites = context.watch<MediaProvider>().favorites;
     final playing = context.watch<Playing>();
-    bool isOnline = Provider.of<NetworkProvider>(context).isOnline;
+    final isOnline = context.watch<NetworkProvider>().isOnline;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -75,11 +65,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(15),
                   bottomRight: Radius.circular(15),
                 ),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 6,
@@ -92,12 +82,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
                 children: [
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.favorite_rounded,
                         color: AppColors.primaryColor,
                         size: 28,
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Text(
                         'Favorites',
                         style: GoogleFonts.roboto(
@@ -107,24 +97,23 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
                         ),
                       ),
                     ],
-                  ), Row(
+                  ),
+                  Row(
                     children: [
-
-                      if (_videos.isNotEmpty)
-                        SizedBox(width: 8),
-                      if (_videos.isNotEmpty)
+                      if (favorites.isNotEmpty)
                         ElevatedButton.icon(
-                          onPressed: () => playing.setQueue(_videos),
+                          onPressed: () => playing.setQueue(favorites),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
-                          icon: Icon(Icons.play_arrow, size: 16),
-                          label: Text(
+                          icon: const Icon(Icons.play_arrow, size: 16),
+                          label: const Text(
                             'Play All',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
@@ -134,7 +123,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
                         ),
                     ],
                   ),
-
                 ],
               ),
             ),
@@ -147,7 +135,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
                 height: 100,
                 animSpeedFactor: 2,
                 showChildOpacityTransition: true,
-                child: _buildContent(),
+                child: favorites.isEmpty
+                    ? _buildEmptyState()
+                    : _buildGrid(favorites),
               )
                   : _buildOfflineState(),
             ),
@@ -157,89 +147,65 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildContent() {
-    if (_isLoading) {
-      return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10.0,
-          mainAxisSpacing: 20.0,
-        ),
-        padding: EdgeInsets.all(16),
-        itemCount: 8,
-        itemBuilder: (context, index) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey[800]!,
-            highlightColor: Colors.grey[700]!,
-            child: Container(
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.grey[800],
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    if (_videos.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.favorite_border_rounded,
-              size: 80,
-              color: Colors.grey[700],
-            ),
-            SizedBox(height: 16),
-            Text(
-              'No favorites yet',
-              style: GoogleFonts.roboto(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[500],
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Your favorite tracks will appear here',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to YouTube page or main content
-                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> YouTubeTwitchTabs()));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text('Browse Tracks'),
-            ),
-          ],
-        ),
-      );
-    }
-
+  Widget _buildGrid(List<MyVideo> favorites) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12.0,
-        mainAxisSpacing: 20.0,
-      ),
-      padding: EdgeInsets.all(16),
-      itemCount: _videos.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12.0,
+          mainAxisSpacing: 20.0,
+          childAspectRatio: 0.9),
+      padding: const EdgeInsets.all(16),
+      itemCount: favorites.length,
       itemBuilder: (context, index) {
-        final video = _videos[index];
+        final video = favorites[index];
         return VideoComponent(video: video);
       },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.favorite_border_rounded,
+            size: 80,
+            color: Colors.grey[700],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No favorites yet',
+            style: GoogleFonts.roboto(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Your favorite tracks will appear here',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => const YouTubeTwitchTabs()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text('Browse Tracks'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -249,7 +215,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.grey[900],
               shape: BoxShape.circle,
@@ -260,7 +226,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
               color: Colors.grey[500],
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           Text(
             "You're offline",
             style: GoogleFonts.roboto(
@@ -269,30 +235,32 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
               color: Colors.grey[400],
             ),
           ),
-          SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               "Favorites may not be up to date. Check your connection and try again.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: Colors.grey),
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // Navigate to Downloads page
-              DefaultTabController.of(context).animateTo(2);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) =>
+                  const YouTubeTwitchTabs(initialTabIndex: 2)));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[800],
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: Text('Go to Downloads'),
+            child: const Text('Go to Downloads'),
           ),
         ],
       ),

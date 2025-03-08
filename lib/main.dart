@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:audiobinge/downloadUtils.dart';
 import 'package:audiobinge/downloadsPage.dart';
@@ -16,7 +15,6 @@ import 'youtubeAudioStream.dart';
 import 'connectivityProvider.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
-import 'connectivityProvider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -345,7 +343,11 @@ class Playing with ChangeNotifier {
     _isPlaying = true;
     notifyListeners();
   }
-
+  Future<void> stop() async {
+    await pause();
+    await seekAudio(Duration.zero);
+    notifyListeners();
+  }
   Future<void> seekAudio(Duration position) async {
     await _audioPlayer.seek(position);
   }
@@ -403,7 +405,6 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.black87,
           brightness: Brightness.dark,
         ).copyWith(
-          background: Colors.black,
           surface: Colors.black87,
           primary: Colors.black87,
         ),
@@ -475,7 +476,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
                   direction: DismissDirection.startToEnd,
                   onDismissed: (_) {
                     playing.hidePlayer();
-                    playing.pause();
+                    playing.stop();
                   },
                   child: BottomPlayer(),
                 ),
@@ -488,7 +489,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             child: BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: _onItemTapped,

@@ -39,6 +39,7 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
     final scrapedVideos = await fetchVideosFromChannel(widget.videoId);
     setState(() {
       channelVideos = scrapedVideos
+          .where((v) => v.title != null && v.title!.isNotEmpty)
           .map((v) => MyVideo(
                 videoId: v.videoId,
                 duration: v.duration,

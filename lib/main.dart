@@ -345,6 +345,7 @@ class Playing with ChangeNotifier {
   }
   Future<void> stop() async {
     await _audioPlayer.stop();
+    _isPlaying = false;
     notifyListeners();
   }
   Future<void> seekAudio(Duration position) async {

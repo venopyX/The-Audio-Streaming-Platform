@@ -8,7 +8,7 @@ import 'videoComponent.dart';
 import 'thumbnailUtils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
-import 'providers/connectivityProvider.dart';
+import 'connectivityProvider.dart';
 import 'main.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
@@ -20,14 +20,12 @@ class YoutubeScreen extends StatefulWidget {
   _YoutubeScreenState createState() => _YoutubeScreenState();
 }
 
-class _YoutubeScreenState extends State<YoutubeScreen> with AutomaticKeepAliveClientMixin{
+class _YoutubeScreenState extends State<YoutubeScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<MyVideo> _videos = [];
   bool _isLoading = false;
   bool _isSearching = false;
 
-  @override
-  bool get wantKeepAlive => true;
   @override
   void initState() {
     super.initState();
@@ -179,7 +177,6 @@ class _YoutubeScreenState extends State<YoutubeScreen> with AutomaticKeepAliveCl
                   crossAxisCount: 2,
                   crossAxisSpacing: 10.0,
                   mainAxisSpacing: 20.0,
-                  childAspectRatio: 0.9,
                 ),
                 padding: EdgeInsets.all(16),
                 itemCount: _isLoading ? 10 : _videos.length,

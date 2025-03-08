@@ -6,17 +6,25 @@ class MyVideo extends Video {
   // Add more custom fields as needed
 
   MyVideo({
-    super.videoId,
-    super.duration,
-    super.title,
-    super.channelName,
-    super.views,
-    super.uploadDate,
-    super.thumbnails,
+    String? videoId,
+    String? duration,
+    String? title,
+    String? channelName,
+    String? views,
+    String? uploadDate,
+    List<Thumbnail>? thumbnails,
     this.localimage,
     this.localaudio,
     // Add custom fields to the constructor
-  });
+  }) : super(
+    videoId: videoId,
+    duration: duration,
+    title: title,
+    channelName: channelName,
+    views: views,
+    uploadDate: uploadDate,
+    thumbnails: thumbnails,
+  );
 
   factory MyVideo.fromMap(Map<String, dynamic>? map, {String? localimage, String? localaudio}) {
     Video video = Video.fromMap(map); // Create a regular Video object first
@@ -34,7 +42,6 @@ class MyVideo extends Video {
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> videoJson = super.toJson();
     videoJson.addAll({

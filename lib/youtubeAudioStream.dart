@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:audiobinge/channelVideosPage.dart';
 import 'package:audiobinge/downloadUtils.dart';
-import 'package:audiobinge/providers/medialProvider.dart';
-import 'package:audiobinge/videoComponent.dart';
 
 import 'MyVideo.dart';
 
@@ -14,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'favoriteUtils.dart';
 import 'thumbnailUtils.dart';
-import 'providers/connectivityProvider.dart';
+import 'connectivityProvider.dart';
 
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {
@@ -237,32 +235,6 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                     },
                     28,
                     color: _showLyrics ? Colors.blue : Colors.white,
-                  ),
-                  SizedBox(width: 20,),
-                  // Replace the current _animatedButton for download with the following code:
-                  Consumer2<MediaProvider, DownloadService>(
-                    builder: (context, mediaProvider, downloadService, _) {
-                      final bool isDownloaded = mediaProvider.isDownloaded(playing.video);
-                      return _animatedButton(
-                        Icons.download_rounded,
-                        isDownloaded
-                            ? () {} // disable download if already downloaded
-                            : () {
-                          downloadService.startDownload(context, playing.video);
-                          mediaProvider.addDownload(playing.video);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Download started'),
-                              backgroundColor: Colors.white,
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(5),
-                            ),
-                          );
-                        },
-                        28,
-                        color: isDownloaded ? Colors.grey : Colors.white,
-                      );
-                    },
                   ),
                 ],
               ),

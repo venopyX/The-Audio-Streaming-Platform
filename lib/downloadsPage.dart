@@ -1,15 +1,16 @@
-// File: lib/downloadsPage.dart
+import 'package:audiobinge/favoriteUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:provider/provider.dart';
+import 'package:youtube_scrape_api/models/video.dart';
 import 'videoComponent.dart';
 import 'package:shimmer/shimmer.dart';
 import 'main.dart';
+import 'package:provider/provider.dart';
 import 'downloadUtils.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
-import 'providers/medialProvider.dart';
+import 'connectivityProvider.dart';
 
 class DownloadScreen extends StatefulWidget {
   const DownloadScreen({super.key});
@@ -19,6 +20,7 @@ class DownloadScreen extends StatefulWidget {
 }
 
 class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProviderStateMixin {
+  List<MyVideo> _videos = [];
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -34,24 +36,35 @@ class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProvid
       parent: _animationController,
       curve: Curves.easeInOut,
     );
+    fetchDownloads();
     _animationController.forward();
-    _loadDownloads();
   }
 
-  Future<void> _loadDownloads() async {
-    setState(() { _isLoading = true; });
-    await context.read<MediaProvider>().fetchDownloads();
-    setState(() { _isLoading = false; });
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchDownloads() async {
+    setState(() {
+      _isLoading = true;
+    });
+    List<MyVideo> videos = await getDownloads();
+    setState(() {
+      _videos = videos;
+      _isLoading = false;
+    });
   }
 
   Future<void> _handleRefresh() async {
-    await _loadDownloads();
+    await fetchDownloads();
+    return Future.value();
   }
 
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
-    final downloads = context.watch<MediaProvider>().downloads;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -63,7 +76,7 @@ class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProvid
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(15),
                   bottomRight: Radius.circular(15),
                 ),
@@ -85,7 +98,7 @@ class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProvid
                         color: AppColors.primaryColor,
                         size: 28,
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Text(
                         'Downloads',
                         style: GoogleFonts.roboto(
@@ -96,42 +109,45 @@ class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProvid
                       ),
                     ],
                   ),
-                  if (downloads.isNotEmpty)
-                    ElevatedButton.icon(
-                      onPressed: () => playing.setQueue(downloads),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+
+                      if (_videos.isNotEmpty)
+                        SizedBox(width: 8),
+                      if (_videos.isNotEmpty)
+                        ElevatedButton.icon(
+                          onPressed: () => playing.setQueue(_videos),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          icon: Icon(Icons.play_arrow, size: 16),
+                          label: Text(
+                            'Play All',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      icon: const Icon(Icons.play_arrow, size: 16),
-                      label: const Text(
-                        'Play All',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
+                    ],
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: LiquidPullToRefresh(
                 onRefresh: _handleRefresh,
-                color: AppColors.primaryColor,
+                color: AppColors.primaryColor, // Using app's yellowish color
                 backgroundColor: Colors.grey[900],
                 height: 100,
                 animSpeedFactor: 2,
                 showChildOpacityTransition: true,
-                child: _isLoading
-                    ? _buildLoadingState()
-                    : downloads.isEmpty
-                    ? _buildEmptyState()
-                    : _buildGrid(downloads),
+                child: _buildContent(),
               ),
             ),
           ],
@@ -140,91 +156,90 @@ class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildGrid(List<MyVideo> downloads) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12.0,
-        mainAxisSpacing: 20.0,
-        childAspectRatio: 0.9,
-      ),
-      padding: const EdgeInsets.all(16),
-      itemCount: downloads.length,
-      itemBuilder: (context, index) {
-        final video = downloads[index];
-        return VideoComponent(video: video, isDownloadPage: true);
-      },
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.download_done_rounded,
-            size: 80,
-            color: Colors.grey[700],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No downloads yet',
-            style: GoogleFonts.roboto(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[500],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Your downloaded tracks will appear here',
-            style: TextStyle(color: Colors.grey[600]),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => const YouTubeTwitchTabs(),
-              ));
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+  Widget _buildContent() {
+    if (_isLoading) {
+      return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12.0,
+          mainAxisSpacing: 20.0,
+        ),
+        padding: EdgeInsets.all(16),
+        itemCount: 8,
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[800]!,
+            highlightColor: Colors.grey[700]!,
+            child: Container(
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(15),
               ),
             ),
-            child: const Text('Find Tracks to Download'),
-          ),
-        ],
-      ),
-    );
-  }
+          );
+        },
+      );
+    }
 
-  Widget _buildLoadingState() {
+    if (_videos.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.download_done_rounded,
+              size: 80,
+              color: Colors.grey[700],
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No downloads yet',
+              style: GoogleFonts.roboto(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[500],
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Your downloaded tracks will appear here',
+              style: TextStyle(color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to YouTube page to find content to download
+                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> YouTubeTwitchTabs()));
+
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text('Find Tracks to Download'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 20.0,
       ),
-      padding: const EdgeInsets.all(16),
-      itemCount: 8,
+      padding: EdgeInsets.all(16),
+      itemCount: _videos.length,
       itemBuilder: (context, index) {
-        return Shimmer.fromColors(
-          baseColor: Colors.grey[800]!,
-          highlightColor: Colors.grey[700]!,
-          child: Container(
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(15),
-            ),
-          ),
-        );
+        final video = _videos[index];
+        return VideoComponent(video: video);
       },
     );
   }

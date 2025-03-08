@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'youtubeAudioStream.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
-import 'providers/connectivityProvider.dart';
+import 'connectivityProvider.dart';
 
 class BottomPlayer extends StatefulWidget {
   const BottomPlayer({super.key});

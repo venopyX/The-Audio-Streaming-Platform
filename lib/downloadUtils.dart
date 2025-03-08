@@ -156,8 +156,6 @@ Future<bool> isDownloaded(MyVideo video) async {
 Future<bool> deleteDownload(MyVideo video) async {
   final id = video.videoId;
   try {
-
-
     // Delete the document from Firestore
     await db.collection('downloads').doc(id).delete();
 

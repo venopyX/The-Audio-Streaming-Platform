@@ -48,10 +48,13 @@ class Playing with ChangeNotifier {
   int _isLooping = 0;
   bool _isShuffling = false;
   bool _isloading = false;
+  bool _isPlayerVisible = true;
 
   bool get isloading => _isloading;
 
   bool get isShuffling => _isShuffling;
+
+  bool get isPlayerVisible => _isPlayerVisible;
 
   ConcatenatingAudioSource get playlist => _playlist;
 
@@ -71,6 +74,15 @@ class Playing with ChangeNotifier {
 
   Playing() {
     _initAudioPlayer();
+  }
+  void hidePlayer() {
+    _isPlayerVisible = false;
+    notifyListeners();
+  }
+
+  void showPlayer() {
+    _isPlayerVisible = true;
+    notifyListeners();
   }
 
   void setIsPlaying(bool isit) {
@@ -153,6 +165,7 @@ class Playing with ChangeNotifier {
 
   Future<void> assign(MyVideo v, bool clear) async {
     _isloading = true;
+    _isPlayerVisible = true;
     await pause();
     notifyListeners();
 
@@ -451,13 +464,21 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
             ),
 
             // BottomPlayer positioned above the bottom navigation
-            if (playing.video.title != null)
+            if (playing.video.title != null && playing.isPlayerVisible)
               Positioned(
                 left: 0,
                 right: 0,
                 bottom:
-                    kBottomNavigationBarHeight, // Position above the bottom nav
-                child: BottomPlayer(),
+                    kBottomNavigationBarHeight +5 , // Position above the bottom nav
+                child: Dismissible(
+                  key: Key("bottomPlayer"),
+                  direction: DismissDirection.startToEnd,
+                  onDismissed: (_) {
+                    playing.hidePlayer();
+                    playing.pause();
+                  },
+                  child: BottomPlayer(),
+                ),
               ),
           ],
         ),

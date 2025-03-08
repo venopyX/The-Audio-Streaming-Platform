@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:audiobinge/downloadUtils.dart';
 import 'package:audiobinge/downloadsPage.dart';
-import 'package:audiobinge/favoriteUtils.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import 'fetchYoutubeStreamUrl.dart';
@@ -17,8 +15,6 @@ import 'youtubeAudioStream.dart';
 import 'connectivityProvider.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
-import 'connectivityProvider.dart';
-import 'videoComponent.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +27,6 @@ void main() async {
     ChangeNotifierProvider(create: (_) => LikeNotifier()),
     ChangeNotifierProvider(create: (_) => Playing()),
     ChangeNotifierProvider(create: (_) => NetworkProvider()),
-    Provider<DownloadService>(create: (context) => DownloadService()),
   ], child: const MyApp()));
 }
 
@@ -51,10 +46,13 @@ class Playing with ChangeNotifier {
   int _isLooping = 0;
   bool _isShuffling = false;
   bool _isloading = false;
+  bool _isPlayerVisible = true;
 
   bool get isloading => _isloading;
 
   bool get isShuffling => _isShuffling;
+
+  bool get isPlayerVisible => _isPlayerVisible;
 
   ConcatenatingAudioSource get playlist => _playlist;
 
@@ -74,6 +72,15 @@ class Playing with ChangeNotifier {
 
   Playing() {
     _initAudioPlayer();
+  }
+  void hidePlayer() {
+    _isPlayerVisible = false;
+    notifyListeners();
+  }
+
+  void showPlayer() {
+    _isPlayerVisible = true;
+    notifyListeners();
   }
 
   void setIsPlaying(bool isit) {
@@ -156,6 +163,7 @@ class Playing with ChangeNotifier {
 
   Future<void> assign(MyVideo v, bool clear) async {
     _isloading = true;
+    _isPlayerVisible = true;
     await pause();
     notifyListeners();
 
@@ -335,7 +343,11 @@ class Playing with ChangeNotifier {
     _isPlaying = true;
     notifyListeners();
   }
-
+  Future<void> stop() async {
+    await _audioPlayer.stop();
+    _isPlaying = false;
+    notifyListeners();
+  }
   Future<void> seekAudio(Duration position) async {
     await _audioPlayer.seek(position);
   }
@@ -343,6 +355,7 @@ class Playing with ChangeNotifier {
   Future<AudioSource> createAudioSource(MyVideo v) async {
     var local = await isDownloaded(v);
     if (local) {
+      print(v.localaudio);
 
       return AudioSource.uri(
         Uri.file(v.localaudio!),
@@ -356,12 +369,7 @@ class Playing with ChangeNotifier {
         ),
       );
     } else {
-      var url = "hello";
-      if(await isFavorites(v)){
-        url = v.localaudio!;
-      }else {
-        url = await fetchYoutubeStreamUrl(v.videoId!);
-      }
+      var url = await fetchYoutubeStreamUrl(v.videoId!);
 
       return AudioSource.uri(
         Uri.parse(url),
@@ -397,7 +405,6 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.black87,
           brightness: Brightness.dark,
         ).copyWith(
-          background: Colors.black,
           surface: Colors.black87,
           primary: Colors.black87,
         ),
@@ -458,13 +465,21 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
             ),
 
             // BottomPlayer positioned above the bottom navigation
-            if (playing.video.title != null)
+            if (playing.video.title != null && playing.isPlayerVisible)
               Positioned(
                 left: 0,
                 right: 0,
                 bottom:
-                    kBottomNavigationBarHeight, // Position above the bottom nav
-                child: BottomPlayer(),
+                    kBottomNavigationBarHeight +5 , // Position above the bottom nav
+                child: Dismissible(
+                  key: Key("bottomPlayer"),
+                  direction: DismissDirection.startToEnd,
+                  onDismissed: (_) {
+                    playing.hidePlayer();
+                    playing.stop();
+                  },
+                  child: BottomPlayer(),
+                ),
               ),
           ],
         ),
@@ -474,7 +489,7 @@ class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             child: BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: _onItemTapped,

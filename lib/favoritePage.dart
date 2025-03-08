@@ -166,7 +166,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
           crossAxisCount: 2,
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 20.0,
-          childAspectRatio: 0.75,
         ),
         padding: EdgeInsets.all(16),
         itemCount: 8,
@@ -175,6 +174,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
             baseColor: Colors.grey[800]!,
             highlightColor: Colors.grey[700]!,
             child: Container(
+              height: 100,
               decoration: BoxDecoration(
                 color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(15),
@@ -235,7 +235,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
         crossAxisCount: 2,
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 20.0,
-        childAspectRatio: 0.75,
       ),
       padding: EdgeInsets.all(16),
       itemCount: _videos.length,

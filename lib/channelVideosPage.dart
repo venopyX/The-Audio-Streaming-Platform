@@ -14,11 +14,9 @@ class ChannelVideosPage extends StatefulWidget {
   final String channelName;
   static String channelAvatar =
       'https://t3.ftcdn.net/jpg/03/53/11/00/360_F_353110097_nbpmfn9iHlxef4EDIhXB1tdTD0lcWhG9.jpg';
+  static String channelArt = '';
   const ChannelVideosPage(
-      {super.key,
-      channelAvatar,
-      required this.videoId,
-      required this.channelName});
+      {super.key, required this.videoId, required this.channelName});
 
   @override
   _ChannelVideosPageState createState() => _ChannelVideosPageState();
@@ -81,6 +79,12 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
                   Container(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     decoration: BoxDecoration(
+                      // Add the image background using channelArt:
+                      image: DecorationImage(
+                        image: NetworkImage(ChannelVideosPage.channelArt),
+                        fit: BoxFit.cover,
+                      ),
+                      // Optionally keep a background color as a fallback or overlay:
                       color: Colors.grey[900],
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(15),

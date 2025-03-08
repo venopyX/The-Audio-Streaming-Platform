@@ -75,6 +75,8 @@ Future<List<Video>> fetchVideosFromChannel(String videoId) async {
         "Fetched ${channelVids.videosList.length} videos for channel '$videoId'");
     ChannelVideosPage.channelAvatar = channelVids.channel.avatar!;
     ChannelVideosPage.channelArt = channelVids.channel.banner!;
+    ChannelVideosPage.totalSubscribers = channelVids.channel.subscribers!;
+    ChannelVideosPage.totalVideos = channelVids.channel.videoCounts!;
     return channelVids.videosList;
   } catch (e) {
     print("Error fetching videos for channel '$videoId': $e");

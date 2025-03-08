@@ -16,6 +16,7 @@ import 'connectivityProvider.dart';
 import 'MyVideo.dart';
 import 'colors.dart';
 import 'videoComponent.dart';
+import 'favoriteUtils.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await JustAudioBackground.init(
@@ -356,7 +357,6 @@ class Playing with ChangeNotifier {
   Future<AudioSource> createAudioSource(MyVideo v) async {
     var local = await isDownloaded(v);
     if (local) {
-      print(v.localaudio);
 
       return AudioSource.uri(
         Uri.file(v.localaudio!),
@@ -370,7 +370,12 @@ class Playing with ChangeNotifier {
         ),
       );
     } else {
-      var url = await fetchYoutubeStreamUrl(v.videoId!);
+      var url = "hello";
+      if(await isFavorites(v)){
+        url = v.localaudio!;
+      }else {
+        url = await fetchYoutubeStreamUrl(v.videoId!);
+      }
 
       return AudioSource.uri(
         Uri.parse(url),

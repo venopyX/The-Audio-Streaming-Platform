@@ -24,7 +24,6 @@ class DownloadService {
   double getProgress(String videoId) {
     return _downloadProgress[videoId] ?? 0.0;
   }
-
   bool getDownloadingState(String videoId) {
     return _downloadingState[videoId] ?? false;
   }

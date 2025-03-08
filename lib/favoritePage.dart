@@ -107,6 +107,32 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
                         ),
                       ),
                     ],
+                  ), Row(
+                    children: [
+
+                      if (_videos.isNotEmpty)
+                        SizedBox(width: 8),
+                      if (_videos.isNotEmpty)
+                        ElevatedButton.icon(
+                          onPressed: () => playing.setQueue(_videos),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          icon: Icon(Icons.play_arrow, size: 16),
+                          label: Text(
+                            'Play All',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
 
                 ],

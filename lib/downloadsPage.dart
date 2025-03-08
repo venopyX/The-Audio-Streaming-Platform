@@ -231,7 +231,6 @@ class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProvid
         crossAxisCount: 2,
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 20.0,
-        childAspectRatio: 0.7,
       ),
       padding: EdgeInsets.all(16),
       itemCount: _videos.length,

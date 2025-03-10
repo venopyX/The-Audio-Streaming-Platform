@@ -65,33 +65,33 @@ class _BottomPlayerState extends State<BottomPlayer> {
                     ),
                     child: Row(
                       children: [
-                        // ClipRRect(
-                        //   borderRadius: BorderRadius.vertical(
-                        //     top: Radius.circular(15),
-                        //     bottom: Radius.circular(15),
-                        //   ),
-                        //   child: SizedBox(
-                        //     width: 50, // Fixed width for thumbnail
-                        //     height: 50, // Fixed height for thumbnail
-                        //     child: AspectRatio(
-                        //       aspectRatio: 1, // Maintain aspect ratio
-                        //       child: (playing.video.localimage != null)
-                        //           ? Image.file(
-                        //         File(playing.video.localimage!),
-                        //         fit: BoxFit.cover, // Or BoxFit.fitWidth/fitHeight
-                        //       )
-                        //           : (isOnline)
-                        //           ? Image.network(
-                        //         playing.video.thumbnails![0].url!,
-                        //         fit: BoxFit.cover,
-                        //       )
-                        //           : Image.asset(
-                        //         'assets/icon.png',
-                        //         fit: BoxFit.cover,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(15),
+                            bottom: Radius.circular(15),
+                          ),
+                          child: SizedBox(
+                            width: 50, // Fixed width for thumbnail
+                            height: 50, // Fixed height for thumbnail
+                            child: AspectRatio(
+                              aspectRatio: 1, // Maintain aspect ratio
+                              child: (playing.video.localimage != null)
+                                  ? Image.file(
+                                File(playing.video.localimage!),
+                                fit: BoxFit.cover, // Or BoxFit.fitWidth/fitHeight
+                              )
+                                  : (isOnline)
+                                  ? Image.network(
+                                playing.video.thumbnails![0].url!,
+                                fit: BoxFit.cover,
+                              )
+                                  : Image.asset(
+                                'assets/icon.png',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
                         SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

@@ -406,6 +406,12 @@ class Playing with ChangeNotifier {
   }
 }
 
+class Thumbnail2 {
+  String? url;
+  int? width, height;
+  Thumbnail2({this.url, this.width, this.height});
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -451,7 +457,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> addSharedVideo(String videoId) async {
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     VideoData? sharedVideo = await youtubeDataApi.fetchVideoData(videoId);
-    Thumbnail? highestThumbnail = getHighestQualityThumbnail(sharedVideo!.video.channelThumb);
+    // Thumbnail? highestThumbnail = getHighestQualityThumbnail(sharedVideo!.video.channelThumb);
     print('-------------');
     print('video data: ${sharedVideo!.video?.channelThumb}');
 
@@ -460,7 +466,7 @@ class _MyAppState extends State<MyApp> {
           videoId: videoId,
           channelName: sharedVideo.video?.channelName,
           title: sharedVideo.video?.title,
-          thumbnails: 
+          thumbnails: [Thumbnail(url: sharedVideo!.video?.channelThumb)]
         ),
         true);
   }

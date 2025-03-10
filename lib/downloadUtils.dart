@@ -152,6 +152,50 @@ Future<bool> isDownloaded(MyVideo video) async {
   }
 }
 
+Future<MyVideo?> getVideoById(MyVideo video) async {
+  try {
+    // Fetch the document with the specified videoId from the 'downloads' collection
+    final document = await db.collection('downloads').doc(video.videoId).get();
+
+    // Check if the document exists
+    if (document != null) {
+      // Extract the data from the document
+      final value = document;
+
+      // Create a Thumbnail object
+      Thumbnail thumbnail = Thumbnail(
+        url: value?['url'],
+        height: value?['height'],
+        width: value?['width'],
+      );
+
+      // Create a list of thumbnails (in this case, only one thumbnail)
+      List<Thumbnail> thumbnails = [];
+      thumbnails.add(thumbnail);
+
+      // Create and return the MyVideo object
+      return MyVideo(
+        videoId: value?['videoId'],
+        duration: value?['duration'],
+        title: value?['title'],
+        channelName: value?['channelName'],
+        views: value?['views'],
+        uploadDate: value?['uploadDate'],
+        thumbnails: thumbnails,
+        localaudio: value?['localaudio'],
+        localimage: value?['localimage'],
+      );
+    } else {
+      // Return null if the document does not exist
+      return null;
+    }
+  } catch (e) {
+    // Handle any errors that occur during the process
+    print("Error fetching video by ID: $e");
+    return null;
+  }
+}
+
 
 Future<bool> deleteDownload(MyVideo video) async {
   final id = video.videoId;

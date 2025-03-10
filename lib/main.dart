@@ -359,8 +359,12 @@ class Playing with ChangeNotifier {
   }
 
   Future<AudioSource> createAudioSource(MyVideo v) async {
+    print("width");
+    print(v.thumbnails?.first.width);
+    print(v.thumbnails?.first.height);
     var local = await isDownloaded(v);
     if (local) {
+      v = (await getVideoById(v)!)!;
       return AudioSource.uri(
         Uri.file(v.localaudio!),
         tag: MediaItem(
@@ -457,17 +461,17 @@ class _MyAppState extends State<MyApp> {
   Future<void> addSharedVideo(String videoId) async {
     YoutubeDataApi youtubeDataApi = YoutubeDataApi();
     VideoData? sharedVideo = await youtubeDataApi.fetchVideoData(videoId);
-    // Thumbnail? highestThumbnail = getHighestQualityThumbnail(sharedVideo!.video.channelThumb);
-    print('-------------');
-    print('video data: ${sharedVideo!.video?.channelThumb}');
-
     Provider.of<Playing>(context, listen: false).assign(
         MyVideo(
-          videoId: videoId,
-          channelName: sharedVideo.video?.channelName,
-          title: sharedVideo.video?.title,
-          thumbnails: [Thumbnail(url: sharedVideo!.video?.channelThumb)]
-        ),
+            videoId: videoId,
+            channelName: sharedVideo?.video?.channelName,
+            title: sharedVideo!.video?.title,
+            thumbnails: [
+              Thumbnail(
+                  url: 'https://img.youtube.com/vi/$videoId/hqdefault.jpg',
+                    width:720,
+                  height:404)
+            ]),
         true);
   }
 

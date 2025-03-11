@@ -3,6 +3,7 @@ import 'package:audiobinge/downloadsPage.dart';
 import 'package:audiobinge/favoritePage.dart';
 import 'package:audiobinge/main.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'MyVideo.dart';
 import 'videoComponent.dart';
@@ -11,6 +12,10 @@ import 'fetchYoutubeStreamUrl.dart';
 class ChannelVideosPage extends StatefulWidget {
   final String videoId;
   final String channelName;
+  static String channelAvatar =
+      'https://t3.ftcdn.net/jpg/03/53/11/00/360_F_353110097_nbpmfn9iHlxef4EDIhXB1tdTD0lcWhG9.jpg';
+  static String channelArt = '';
+  static String totalVideos = '0', totalSubscribers = '0';
   const ChannelVideosPage(
       {super.key, required this.videoId, required this.channelName});
 
@@ -40,51 +45,179 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
     setState(() {
       channelVideos = scrapedVideos
           .where((v) => v.title != null && v.title!.isNotEmpty)
-          .map((v) => MyVideo(
-                videoId: v.videoId,
-                duration: v.duration,
-                title: v.title,
-                channelName: v.channelName,
-                views: v.views,
-                uploadDate: v.uploadDate,
-                thumbnails: v.thumbnails,
-              ))
-          .toList();
+          .map((v) {
+        return MyVideo(
+          videoId: v.videoId,
+          duration: v.duration,
+          title: v.title,
+          channelName: v.channelName,
+          views: v.views,
+          uploadDate: v.uploadDate,
+          thumbnails: v.thumbnails,
+        );
+      }).toList();
       _isLoading = false;
     });
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index, BuildContext context) {
     setState(() {
+      if (_selectedIndex == 0 && index == 0) {
+        Navigator.pop(context);
+      }
       _selectedIndex = index;
     });
   }
 
+  Widget _buildCountInfo(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.white70),
+        SizedBox(width: 8),
+        Text(text,
+            style: GoogleFonts.roboto(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            )),
+      ],
+    );
+  }
+
   Widget channelVideoScreen() {
-    return (_isLoading
+    return _isLoading
         ? Center(child: CircularProgressIndicator(color: Colors.red))
         : channelVideos.isEmpty
             ? Center(
-                child: Text('No videos found.',
-                    style: TextStyle(fontSize: 20, color: Colors.white)))
-            : GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 20.0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.video_library_outlined,
+                        size: 60, color: Colors.white54),
+                    SizedBox(height: 20),
+                    Text('No Videos Available',
+                        style: GoogleFonts.poppins(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
+                    SizedBox(height: 10),
+                    Text('This channel hasn\'t uploaded any content yet',
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, color: Colors.white70)),
+                  ],
                 ),
-                itemCount: channelVideos.length,
-                itemBuilder: (context, index) {
-                  return VideoComponent(video: channelVideos[index]);
-                },
-              ));
+              )
+            : Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 24),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(ChannelVideosPage.channelArt),
+                        fit: BoxFit.cover,
+                        colorFilter: ColorFilter.mode(
+                            Colors.black.withOpacity(0.6), BlendMode.darken),
+                      ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(25),
+                        bottomRight: Radius.circular(25),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 12,
+                          offset: Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Colors.grey[200],
+                                backgroundImage: NetworkImage(
+                                    ChannelVideosPage.channelAvatar),
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.channelName,
+                                    style: GoogleFonts.robotoCondensed(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Video Collection',
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 16,
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          children: [
+                            _buildCountInfo(Icons.video_library,
+                                ChannelVideosPage.totalVideos),
+                            SizedBox(width: 20),
+                            _buildCountInfo(Icons.person_outline,
+                                ChannelVideosPage.totalSubscribers),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                              MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.8,
+                        ),
+                        itemCount: channelVideos.length,
+                        itemBuilder: (context, index) {
+                          return VideoComponent(video: channelVideos[index]);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              );
   }
 
   @override
   Widget build(BuildContext context) {
     final playing = context.watch<Playing>();
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.channelName} Videos')),
+      appBar: CustomAppBar(),
       body: Stack(
         children: [
           AnimatedSwitcher(
@@ -124,7 +257,7 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
             label: 'Downloads',
           ),
         ],
-        onTap: _onItemTapped,
+        onTap: (index) => _onItemTapped(index, context),
       ),
     );
   }

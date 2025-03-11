@@ -1,3 +1,4 @@
+import 'package:audiobinge/channelVideosPage.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' hide Video;
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart' as scraper;
@@ -72,6 +73,10 @@ Future<List<Video>> fetchVideosFromChannel(String videoId) async {
     }
     print(
         "Fetched ${channelVids.videosList.length} videos for channel '$videoId'");
+    ChannelVideosPage.channelAvatar = channelVids.channel.avatar!;
+    ChannelVideosPage.channelArt = channelVids.channel.banner!;
+    ChannelVideosPage.totalSubscribers = channelVids.channel.subscribers!;
+    ChannelVideosPage.totalVideos = channelVids.channel.videoCounts!;
     return channelVids.videosList;
   } catch (e) {
     print("Error fetching videos for channel '$videoId': $e");

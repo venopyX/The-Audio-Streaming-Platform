@@ -42,7 +42,7 @@ class YoutubeAudioPlayer extends StatefulWidget {
   const YoutubeAudioPlayer({super.key, required this.videoId});
 
   @override
-  _YoutubeAudioPlayerState createState() => _YoutubeAudioPlayerState();
+  State<YoutubeAudioPlayer> createState() => _YoutubeAudioPlayerState();
 }
 
 class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {

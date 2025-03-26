@@ -50,7 +50,7 @@ class VideoComponent extends StatefulWidget {
   const VideoComponent({super.key, required this.video});
 
   @override
-  _VideoComponentState createState() => _VideoComponentState();
+  State<VideoComponent> createState() => _VideoComponentState();
 }
 
 class _VideoComponentState extends State<VideoComponent> {
@@ -90,8 +90,8 @@ class _VideoComponentState extends State<VideoComponent> {
             snapshot.data!.isEmpty) {
           return Text('No data available');
         } else {
-          bool isLiked = (snapshot.data![0] ?? false);
-          bool isDownloaded = (snapshot.data![1] ?? false);
+          bool isLiked = (snapshot.data![0] as bool? ?? false);
+          bool isDownloaded = (snapshot.data![1] as bool? ?? false);
 
           return StreamBuilder<Map<String, double>>(
             stream: downloadService.progressStream,

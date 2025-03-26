@@ -16,7 +16,7 @@ class YoutubeScreen extends StatefulWidget {
   const YoutubeScreen({super.key});
 
   @override
-  _YoutubeScreenState createState() => _YoutubeScreenState();
+  State<YoutubeScreen> createState() => _YoutubeScreenState();
 }
 
 class _YoutubeScreenState extends State<YoutubeScreen> {
@@ -117,11 +117,13 @@ class _YoutubeScreenState extends State<YoutubeScreen> {
                 contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: SvgPicture.asset(
-                    'assets/icons/youtube.svg',
-                    height: 24,
-                    color: Colors.white,
-                  ),
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    child: SvgPicture.asset(
+                      'assets/icons/youtube.svg',
+                      height: 24,
+                      ),
+                    ),
                 ),
                 suffixIcon: _isSearching
                     ? Padding(

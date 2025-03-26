@@ -505,7 +505,7 @@ class YouTubeTwitchTabs extends StatefulWidget {
   const YouTubeTwitchTabs({super.key});
 
   @override
-  _YouTubeTwitchTabsState createState() => _YouTubeTwitchTabsState();
+  State<YouTubeTwitchTabs> createState() => _YouTubeTwitchTabsState();
 }
 
 class _YouTubeTwitchTabsState extends State<YouTubeTwitchTabs> {

@@ -13,7 +13,7 @@ class DownloadScreen extends StatefulWidget {
   const DownloadScreen({super.key});
 
   @override
-  _DownloadScreenState createState() => _DownloadScreenState();
+  State<DownloadScreen> createState() => _DownloadScreenState();
 }
 
 class _DownloadScreenState extends State<DownloadScreen> with SingleTickerProviderStateMixin {

@@ -22,7 +22,7 @@ class ChannelVideosPage extends StatefulWidget {
       {super.key, required this.videoId, required this.channelName});
 
   @override
-  _ChannelVideosPageState createState() => _ChannelVideosPageState();
+  State<ChannelVideosPage> createState() => _ChannelVideosPageState();
 }
 
 class _ChannelVideosPageState extends State<ChannelVideosPage> {

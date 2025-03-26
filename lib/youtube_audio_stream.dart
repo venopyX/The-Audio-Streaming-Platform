@@ -1,18 +1,17 @@
 import 'dart:io';
 
 import 'package:audiobinge/channelVideosPage.dart';
-import 'package:audiobinge/downloadUtils.dart';
 
-import 'MyVideo.dart';
+import 'my_video.dart';
 
-import 'fetchYoutubeStreamUrl.dart';
+import 'fetch_youtube_stream_url.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
-import 'favoriteUtils.dart';
-import 'thumbnailUtils.dart';
-import 'connectivityProvider.dart';
+import 'favorite_utils.dart';
+import 'thumbnail_utils.dart';
+import 'connectivity_provider.dart';
 
 // LikeNotifier provider
 class LikeNotifier extends ChangeNotifier {
@@ -40,14 +39,14 @@ class LikeNotifier extends ChangeNotifier {
 
 class YoutubeAudioPlayer extends StatefulWidget {
   final String videoId;
-  YoutubeAudioPlayer({required this.videoId});
+  const YoutubeAudioPlayer({super.key, required this.videoId});
 
   @override
   _YoutubeAudioPlayerState createState() => _YoutubeAudioPlayerState();
 }
 
 class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
-  bool _isInPlaylist = false; // Track playlist state
+  final bool _isInPlaylist = false; // Track playlist state
   bool _showLyrics = false; // Track lyrics visibility
   double playbackSpeed = 1.0; // Tracks the current playback speed
   bool _speedControlExpanded = false; // Track the speed control
@@ -397,12 +396,12 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
   // Helper function to create animated buttons
   Widget _animatedButton(IconData icon, VoidCallback onPressed, double size,
       {Color color = Colors.white}) {
-    bool _isButtonPressed = false;
+    bool isButtonPressed = false;
 
     return GestureDetector(
-      onTapDown: (_) => setState(() => _isButtonPressed = true),
-      onTapUp: (_) => setState(() => _isButtonPressed = false),
-      onTapCancel: () => setState(() => _isButtonPressed = false),
+      onTapDown: (_) => setState(() => isButtonPressed = true),
+      onTapUp: (_) => setState(() => isButtonPressed = false),
+      onTapCancel: () => setState(() => isButtonPressed = false),
       onTap: onPressed,
       child: AnimatedContainer(
         duration: Duration(milliseconds: 150),
@@ -414,7 +413,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
         ),
         child: ScaleTransition(
           scale: Tween(begin: 1.0, end: 0.9).animate(
-            AlwaysStoppedAnimation(_isButtonPressed ? 0.9 : 1.0),
+            AlwaysStoppedAnimation(isButtonPressed ? 0.9 : 1.0),
           ),
           child: Icon(
             icon,

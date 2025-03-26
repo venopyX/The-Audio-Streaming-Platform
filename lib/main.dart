@@ -1,28 +1,27 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:audiobinge/downloadUtils.dart';
-import 'package:audiobinge/downloadsPage.dart';
-import 'package:audiobinge/thumbnailUtils.dart';
+import 'package:audiobinge/download_utils.dart';
+import 'package:audiobinge/downloads_page.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:youtube_scrape_api/models/thumbnail.dart';
 import 'package:youtube_scrape_api/models/video_data.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
 
-import 'fetchYoutubeStreamUrl.dart';
+import 'fetch_youtube_stream_url.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytex;
-import 'youtubePage.dart';
-import 'favoritePage.dart';
-import 'bottomPlayer.dart';
+import 'youtube_page.dart';
+import 'favorite_page.dart';
+import 'bottom_player.dart';
 import 'package:just_audio/just_audio.dart';
-import 'youtubeAudioStream.dart';
-import 'connectivityProvider.dart';
-import 'MyVideo.dart';
+import 'youtube_audio_stream.dart';
+import 'connectivity_provider.dart';
+import 'my_video.dart';
 import 'colors.dart';
-import 'videoComponent.dart';
-import 'favoriteUtils.dart';
+import 'video_component.dart';
+import 'favorite_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +42,7 @@ class Playing with ChangeNotifier {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   MyVideo _video = MyVideo();
-  List<MyVideo> _queue = [];
+  final List<MyVideo> _queue = [];
   ConcatenatingAudioSource _playlist =
       ConcatenatingAudioSource(children: []); // Initialize playlist
   List<ytex.ClosedCaption> captions = [];
@@ -364,7 +363,7 @@ class Playing with ChangeNotifier {
     print(v.thumbnails?.first.height);
     var local = await isDownloaded(v);
     if (local) {
-      v = (await getVideoById(v)!)!;
+      v = (await getVideoById(v))!;
       return AudioSource.uri(
         Uri.file(v.localaudio!),
         tag: MediaItem(

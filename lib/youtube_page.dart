@@ -3,15 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:youtube_scrape_api/models/video.dart';
-import 'package:youtube_scrape_api/models/video_data.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart';
-import 'videoComponent.dart';
-import 'thumbnailUtils.dart';
+import 'video_component.dart';
+import 'thumbnail_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
-import 'connectivityProvider.dart';
-import 'main.dart';
-import 'MyVideo.dart';
+import 'connectivity_provider.dart';
+import 'my_video.dart';
 import 'colors.dart';
 
 class YoutubeScreen extends StatefulWidget {

@@ -1,15 +1,13 @@
-import 'package:audiobinge/favoriteUtils.dart';
-import 'package:audiobinge/youtubePage.dart';
+import 'package:audiobinge/favorite_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:youtube_scrape_api/models/video.dart';
-import 'videoComponent.dart';
+import 'video_component.dart';
 import 'package:shimmer/shimmer.dart';
 import 'main.dart';
 import 'package:provider/provider.dart';
-import 'connectivityProvider.dart';
-import 'MyVideo.dart';
+import 'connectivity_provider.dart';
+import 'my_video.dart';
 import 'colors.dart';
 
 class FavoriteScreen extends StatefulWidget {
@@ -284,7 +282,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with SingleTickerProvid
           ElevatedButton(
             onPressed: () {
               // Navigate to Downloads page
-              DefaultTabController.of(context)?.animateTo(2);
+              DefaultTabController.of(context).animateTo(2);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[800],

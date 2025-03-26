@@ -3,12 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:youtube_scrape_api/models/video.dart';
-import 'fetchYoutubeStreamUrl.dart';
+import 'fetch_youtube_stream_url.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:localstore/localstore.dart';
 import 'package:youtube_scrape_api/models/thumbnail.dart';
-import 'package:audiobinge/MyVideo.dart';
+import 'package:audiobinge/my_video.dart';
 final db = Localstore.instance;
 
 Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video,void Function(double progress) progressCallback,) async{
@@ -23,10 +22,6 @@ Future<void> downloadAndSaveMetaData(BuildContext context,MyVideo video,void Fun
 Future<String> downloadAudio(String id, String fileName,BuildContext context,void Function(double progress) progressCallback) async {
   try {
     String? audioUrl = await fetchYoutubeStreamUrl(id);
-    if (audioUrl == null) {
-      print("Failed to get audio stream.");
-      return "none";
-    }
 
     String path = await getDownloadPath();
     String savePath = '$path/$fileName.mp3';
@@ -49,7 +44,7 @@ Future<String> downloadAudio(String id, String fileName,BuildContext context,voi
 }
 Future<String> downloadImageFromUrl(String imageUrl, String fileName) async {
   try {
-    if (imageUrl == null || imageUrl.isEmpty) {
+    if (imageUrl.isEmpty) {
       print("Image URL is invalid.");
       return "none";
     }
@@ -164,9 +159,9 @@ Future<MyVideo?> getVideoById(MyVideo video) async {
 
       // Create a Thumbnail object
       Thumbnail thumbnail = Thumbnail(
-        url: value?['url'],
-        height: value?['height'],
-        width: value?['width'],
+        url: value['url'],
+        height: value['height'],
+        width: value['width'],
       );
 
       // Create a list of thumbnails (in this case, only one thumbnail)
@@ -175,15 +170,15 @@ Future<MyVideo?> getVideoById(MyVideo video) async {
 
       // Create and return the MyVideo object
       return MyVideo(
-        videoId: value?['videoId'],
-        duration: value?['duration'],
-        title: value?['title'],
-        channelName: value?['channelName'],
-        views: value?['views'],
-        uploadDate: value?['uploadDate'],
+        videoId: value['videoId'],
+        duration: value['duration'],
+        title: value['title'],
+        channelName: value['channelName'],
+        views: value['views'],
+        uploadDate: value['uploadDate'],
         thumbnails: thumbnails,
-        localaudio: value?['localaudio'],
-        localimage: value?['localimage'],
+        localaudio: value['localaudio'],
+        localimage: value['localimage'],
       );
     } else {
       // Return null if the document does not exist
@@ -238,10 +233,6 @@ Future<bool> deleteDownload(MyVideo video) async {
 Future<String> downloadFileDirect(String id, String fileName) async {
   try {
     var stream = await fetchAcutalStream(id);
-    if (stream == null) {
-      print("Failed to get audio stream.");
-      return "none";
-    }
 
     String path = await getDownloadPath();
     String savePath = '$path/$fileName.mp3';

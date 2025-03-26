@@ -3,14 +3,12 @@ import 'dart:io';
 
 import 'package:audiobinge/channelVideosPage.dart';
 import 'package:flutter/material.dart';
-import 'package:youtube_scrape_api/models/video.dart';
 import 'package:provider/provider.dart';
-import 'downloadUtils.dart';
+import 'download_utils.dart';
 import 'main.dart'; // Replace with the actual path
-import 'youtubeAudioStream.dart';
-import 'favoriteUtils.dart';
-import 'connectivityProvider.dart';
-import 'MyVideo.dart';
+import 'favorite_utils.dart';
+import 'connectivity_provider.dart';
+import 'my_video.dart';
 import 'colors.dart';
 
 class DownloadService {
@@ -49,7 +47,7 @@ class DownloadService {
 class VideoComponent extends StatefulWidget {
   final MyVideo video;
 
-  VideoComponent({required this.video});
+  const VideoComponent({super.key, required this.video});
 
   @override
   _VideoComponentState createState() => _VideoComponentState();
@@ -92,8 +90,8 @@ class _VideoComponentState extends State<VideoComponent> {
             snapshot.data!.isEmpty) {
           return Text('No data available');
         } else {
-          bool _isLiked = (snapshot.data![0] ?? false);
-          bool _isDownloaded = (snapshot.data![1] ?? false);
+          bool isLiked = (snapshot.data![0] ?? false);
+          bool isDownloaded = (snapshot.data![1] ?? false);
 
           return StreamBuilder<Map<String, double>>(
             stream: downloadService.progressStream,
@@ -249,7 +247,7 @@ class _VideoComponentState extends State<VideoComponent> {
                                     value: 'add_to_queue',
                                     child: Text('Add to Queue'),
                                   ),
-                                  _isLiked
+                                  isLiked
                                       ? PopupMenuItem<String>(
                                           value: 'remove_from_favorites',
                                           child: Text('Remove from favorites'),
@@ -258,7 +256,7 @@ class _VideoComponentState extends State<VideoComponent> {
                                           value: 'add_to_favorites',
                                           child: Text('Add to favorites'),
                                         ),
-                                  _isDownloaded
+                                  isDownloaded
                                       ? PopupMenuItem<String>(
                                           value: 'remove_from_downloads',
                                           child: Text('Remove from downloads'),

@@ -1,13 +1,13 @@
-import 'package:audiobinge/bottomPlayer.dart';
-import 'package:audiobinge/downloadsPage.dart';
-import 'package:audiobinge/favoritePage.dart';
+import 'package:audiobinge/bottom_player.dart';
+import 'package:audiobinge/downloads_page.dart';
+import 'package:audiobinge/favorite_page.dart';
 import 'package:audiobinge/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'MyVideo.dart';
-import 'videoComponent.dart';
-import 'fetchYoutubeStreamUrl.dart';
+import 'my_video.dart';
+import 'video_component.dart';
+import 'fetch_youtube_stream_url.dart';
 
 class ChannelVideosPage extends StatefulWidget {
   final String videoId;

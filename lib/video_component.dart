@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audiobinge/channelVideosPage.dart';
+import 'package:audiobinge/channel_videos_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'download_utils.dart';

@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -14,8 +16,8 @@ class NetworkProvider with ChangeNotifier {
       // Initial check with a small delay
       await Future.delayed(Duration(seconds: 1)); // Add a slight delay
       var connectivityResult = await Connectivity().checkConnectivity();
-      print("trexing");
-      print(connectivityResult);
+      developer.log("trexing");
+      developer.log(connectivityResult as String);
       _updateConnectionStatus(connectivityResult);
 
       // Listening for future connectivity changes
@@ -23,7 +25,7 @@ class NetworkProvider with ChangeNotifier {
         _updateConnectionStatus(result);
       });
     } catch (e) {
-      print("Error checking connectivity: $e");
+      developer.log("Error checking connectivity: $e");
       _isOnline = false; // Assume offline if there's an error
       notifyListeners();
     }
@@ -34,7 +36,7 @@ class NetworkProvider with ChangeNotifier {
     if (_isOnline != newStatus) {
       _isOnline = newStatus;
       notifyListeners();
-      print(_isOnline ? "Online" : "Offline"); // Debugging output
+      developer.log(_isOnline ? "Online" : "Offline"); // Debugging output
     }
   }
 

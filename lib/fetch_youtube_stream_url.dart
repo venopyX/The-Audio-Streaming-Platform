@@ -1,4 +1,6 @@
-import 'package:audiobinge/channelVideosPage.dart';
+import 'dart:developer' as developer;
+
+import 'package:audiobinge/channel_videos_page.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' hide Video;
 import 'package:youtube_scrape_api/models/video.dart';
 import 'package:youtube_scrape_api/youtube_scrape_api.dart' as scraper;
@@ -12,7 +14,7 @@ Future<String> fetchYoutubeStreamUrl(String id) async {
       ]);
 
   // Print all the available streams.
-  print('fetched url');
+  developer.log('fetched url');
   final audio = manifest.audioOnly.withHighestBitrate();
   yt.close();
   return audio.url.toString();
@@ -27,7 +29,7 @@ Future<Stream<List<int>>> fetchAcutalStream(String id) async {
       ]);
 
   // Print all the available streams.
-  print('fetched url');
+  developer.log('fetched url');
   final audio = manifest.audioOnly.withHighestBitrate();
   var stream = yt.videos.streams.get(audio);
   yt.close();
@@ -68,10 +70,10 @@ Future<List<Video>> fetchVideosFromChannel(String videoId) async {
     var channelVids = await scraper.YoutubeDataApi()
         .fetchChannelData(channelId?.video?.channelId ?? "");
     if (channelVids == null) {
-      print("No data returned for channel '$videoId'");
+      developer.log("No data returned for channel '$videoId'");
       return [];
     }
-    print(
+    developer.log(
         "Fetched ${channelVids.videosList.length} videos for channel '$videoId'");
     ChannelVideosPage.channelAvatar = channelVids.channel.avatar!;
     ChannelVideosPage.channelArt = channelVids.channel.banner!;
@@ -79,7 +81,7 @@ Future<List<Video>> fetchVideosFromChannel(String videoId) async {
     ChannelVideosPage.totalVideos = channelVids.channel.videoCounts!;
     return channelVids.videosList;
   } catch (e) {
-    print("Error fetching videos for channel '$videoId': $e");
+    developer.log("Error fetching videos for channel '$videoId': $e");
     return [];
   }
 }

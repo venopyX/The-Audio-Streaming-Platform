@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:audiobinge/bottom_player.dart';
 import 'package:audiobinge/downloads_page.dart';
 import 'package:audiobinge/favorite_page.dart';
@@ -37,7 +39,7 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
   }
 
   Future<void> _fetchChannelVideos() async {
-    print('object called');
+    developer.log('object called');
     setState(() {
       _isLoading = true;
     });

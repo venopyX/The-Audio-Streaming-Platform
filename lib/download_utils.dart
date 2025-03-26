@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,23 +30,23 @@ Future<String> downloadAudio(String id, String fileName,BuildContext context,voi
     Dio dio = Dio();
     await dio.download(audioUrl, savePath, onReceiveProgress: (received, total) {
       if (total != -1) {
-        print('Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
+        developer.log('Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
         double progress = received / total;
         progressCallback(progress);
       }
     });
 
-    print("Download complete: $savePath");
+    developer.log("Download complete: $savePath");
     return savePath;
   } catch (e) {
-    print("Download failed: $e");
+    developer.log("Download failed: $e");
     return "none";
   }
 }
 Future<String> downloadImageFromUrl(String imageUrl, String fileName) async {
   try {
     if (imageUrl.isEmpty) {
-      print("Image URL is invalid.");
+      developer.log("Image URL is invalid.");
       return "none";
     }
 
@@ -55,14 +56,14 @@ Future<String> downloadImageFromUrl(String imageUrl, String fileName) async {
     Dio dio = Dio();
     await dio.download(imageUrl, savePath, onReceiveProgress: (received, total) {
       if (total != -1) {
-        print('Downloading image: ${(received / total * 100).toStringAsFixed(0)}%');
+        developer.log('Downloading image: ${(received / total * 100).toStringAsFixed(0)}%');
       }
     });
 
-    print("Image download complete: $savePath");
+    developer.log("Image download complete: $savePath");
     return savePath;
   } catch (e) {
-    print("Image download failed: $e");
+    developer.log("Image download failed: $e");
     return "none";
   }
 }
@@ -81,8 +82,8 @@ Future<bool> requestStoragePermission() async {
 Future<bool> saveToDownloads(MyVideo video,String audiopath, String imagepath) async {
   final id = video.videoId;
   final thumbnail = video.thumbnails?.isNotEmpty == true ? video.thumbnails!.first : null;
-  print(audiopath);
-  print(imagepath);
+  developer.log(audiopath);
+  developer.log(imagepath);
   try {
     await db.collection('downloads').doc(id).set({
       'videoId': video.videoId,
@@ -97,10 +98,10 @@ Future<bool> saveToDownloads(MyVideo video,String audiopath, String imagepath) a
       'localaudio':audiopath,
       'localimage':imagepath
     });
-    print("Video saved to download successfully.");
+    developer.log("Video saved to download successfully.");
     return true; // Indicate success
   } catch (e) {
-    print("Error saving video to download: $e");
+    developer.log("Error saving video to download: $e");
     return false; // Indicate failure
   }
 }
@@ -142,7 +143,7 @@ Future<bool> isDownloaded(MyVideo video) async {
     final favorite = await db.collection('downloads').doc(id).get();
     return favorite != null; // Returns true if document exists, false otherwise
   } catch (e) {
-    print("Error checking if video is in favorites: $e");
+    developer.log("Error checking if video is in favorites: $e");
     return false; // Return false in case of an error
   }
 }
@@ -186,7 +187,7 @@ Future<MyVideo?> getVideoById(MyVideo video) async {
     }
   } catch (e) {
     // Handle any errors that occur during the process
-    print("Error fetching video by ID: $e");
+    developer.log("Error fetching video by ID: $e");
     return null;
   }
 }
@@ -203,9 +204,9 @@ Future<bool> deleteDownload(MyVideo video) async {
       File audioFile = File(video.localaudio!);
       if (await audioFile.exists()) {
         await audioFile.delete();
-        print("Audio file deleted: ${video.localaudio}");
+        developer.log("Audio file deleted: ${video.localaudio}");
       } else {
-        print("Audio file not found: ${video.localaudio}");
+        developer.log("Audio file not found: ${video.localaudio}");
       }
     }
 
@@ -214,16 +215,16 @@ Future<bool> deleteDownload(MyVideo video) async {
       File imageFile = File(video.localimage!);
       if (await imageFile.exists()) {
         await imageFile.delete();
-        print("Image file deleted: ${video.localimage}");
+        developer.log("Image file deleted: ${video.localimage}");
       } else {
-        print("Image file not found: ${video.localimage}");
+        developer.log("Image file not found: ${video.localimage}");
       }
     }
 
-    print("Video deleted from downloads successfully.");
+    developer.log("Video deleted from downloads successfully.");
     return true; // Indicate success
   } catch (e) {
-    print("Error deleting video from downloads: $e");
+    developer.log("Error deleting video from downloads: $e");
     return false; // Indicate failure
   }
 }
@@ -243,7 +244,7 @@ Future<String> downloadFileDirect(String id, String fileName) async {
 
     // Pipe the stream into the file
     await stream.pipe(fileStream).catchError((e) {
-      print("Error writing to file: $e");
+      developer.log("Error writing to file: $e");
       throw e; // Re-throw the error to be caught by the outer try-catch
     });
 
@@ -251,10 +252,10 @@ Future<String> downloadFileDirect(String id, String fileName) async {
     await fileStream.flush();
     await fileStream.close();
 
-    print("Download complete: $savePath");
+    developer.log("Download complete: $savePath");
     return savePath;
   } catch (e) {
-    print("Download failed: $e");
+    developer.log("Download failed: $e");
     return "none";
   }
 }

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:audiobinge/channelVideosPage.dart';
+import 'package:audiobinge/channel_videos_page.dart';
 
 import 'my_video.dart';
 

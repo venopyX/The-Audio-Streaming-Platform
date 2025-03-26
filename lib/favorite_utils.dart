@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:audiobinge/my_video.dart';
 import 'package:audiobinge/fetch_youtube_stream_url.dart';
 import 'package:localstore/localstore.dart';
@@ -55,10 +57,10 @@ Future<bool> saveToFavorites(MyVideo video) async {
       'localaudio': localaudio
     });
 
-    print("MyVideo saved to favorites successfully.");
+    developer.log("MyVideo saved to favorites successfully.");
     return true; // Indicate success
   } catch (e) {
-    print("Error saving video to favorites: $e");
+    developer.log("Error saving video to favorites: $e");
     return false; // Indicate failure
   }
 }
@@ -68,10 +70,10 @@ Future<bool> removeFavorites(MyVideo video) async {
 
   try {
     await db.collection('favorites').doc(id).delete();
-    print("MyVideo removed from favorites successfully.");
+    developer.log("MyVideo removed from favorites successfully.");
     return true; // Indicate success
   } catch (e) {
-    print("Error removing video from favorites: $e");
+    developer.log("Error removing video from favorites: $e");
     return false; // Indicate failure
   }
 }
@@ -82,7 +84,7 @@ Future<bool> isFavorites(MyVideo video) async {
     final favorite = await db.collection('favorites').doc(id).get();
     return favorite != null; // Returns true if document exists, false otherwise
   } catch (e) {
-    print("Error checking if video is in favorites: $e");
+    developer.log("Error checking if video is in favorites: $e");
     return false; // Return false in case of an error
   }
 }

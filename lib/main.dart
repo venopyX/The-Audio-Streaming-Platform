@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:ui';
 import 'package:audiobinge/download_utils.dart';
 import 'package:audiobinge/downloads_page.dart';
@@ -186,7 +187,7 @@ class Playing with ChangeNotifier {
       if (index != -1) {
         await _audioPlayer.seek(Duration.zero, index: index);
       } else {
-        print("Video not found in the playlist.");
+        developer.log("Video not found in the playlist.");
         return;
       }
     }
@@ -201,7 +202,7 @@ class Playing with ChangeNotifier {
 
   Future<void> addToQueue(MyVideo v) async {
     if (_queue.isEmpty) {
-      print("empty");
+      developer.log("empty");
       await assign(v, true);
       notifyListeners();
       return;
@@ -252,7 +253,7 @@ class Playing with ChangeNotifier {
       List<AudioSource> sources = [];
 
       for (var video in videos) {
-        print(video.title ?? "none");
+        developer.log(video.title ?? "none");
         AudioSource audioSource = await createAudioSource(video);
         _queue.add(video);
         sources.add(audioSource);
@@ -263,8 +264,8 @@ class Playing with ChangeNotifier {
       _video = videos.first;
       await _audioPlayer.setAudioSource(_playlist);
 
-      print(_queue);
-      print(_playlist);
+      developer.log(_queue as String);
+      developer.log(_playlist as String);
 
       await play();
     }
@@ -329,7 +330,7 @@ class Playing with ChangeNotifier {
       await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
       await play();
     } catch (e) {
-      print('Error streaming audio: $e');
+      developer.log('Error streaming audio: $e');
       _isPlaying = false;
       notifyListeners();
     }
@@ -358,9 +359,9 @@ class Playing with ChangeNotifier {
   }
 
   Future<AudioSource> createAudioSource(MyVideo v) async {
-    print("width");
-    print(v.thumbnails?.first.width);
-    print(v.thumbnails?.first.height);
+    developer.log("width");
+    developer.log(v.thumbnails?.first.width as String);
+    developer.log(v.thumbnails?.first.height as String);
     var local = await isDownloaded(v);
     if (local) {
       v = (await getVideoById(v))!;
@@ -382,11 +383,11 @@ class Playing with ChangeNotifier {
       } else {
         url = await fetchYoutubeStreamUrl(v.videoId!);
       }
-      print('------------------------');
-      print(v.videoId);
-      print(v.channelName);
-      print(v.title);
-      print(v.thumbnails);
+      developer.log('------------------------');
+      developer.log(v.videoId ?? "null");
+      developer.log(v.channelName ?? "null");
+      developer.log(v.title ?? "null");
+      developer.log(v.thumbnails as String);
 
       return AudioSource.uri(
         Uri.parse(url),
@@ -441,7 +442,7 @@ class _MyAppState extends State<MyApp> {
           addSharedVideo(videoId);
         }
 
-        print(_sharedFiles.map((f) => f.toMap()));
+        developer.log(_sharedFiles.map((f) => f.toMap()) as String);
       });
     });
 
@@ -449,7 +450,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _sharedFiles.clear();
         _sharedFiles.addAll(value);
-        print(_sharedFiles.map((f) => f.toMap()));
+        developer.log(_sharedFiles.map((f) => f.toMap()) as String);
 
         // Tell the library that we are done processing the intent.
         ReceiveSharingIntent.instance.reset();

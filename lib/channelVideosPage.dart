@@ -117,7 +117,7 @@ class _ChannelVideosPageState extends State<ChannelVideosPage> {
                         image: NetworkImage(ChannelVideosPage.channelArt),
                         fit: BoxFit.cover,
                         colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.6), BlendMode.darken),
+                            Colors.black.withValues(alpha: 0.6), BlendMode.darken),
                       ),
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(25),

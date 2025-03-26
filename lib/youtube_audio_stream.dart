@@ -120,7 +120,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -135,7 +135,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 10,
                       spreadRadius: 2,
                       offset: Offset(0, 4),
@@ -350,7 +350,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 10,
                             spreadRadius: 2,
                             offset: Offset(0, 4),
@@ -409,7 +409,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
         child: ScaleTransition(
           scale: Tween(begin: 1.0, end: 0.9).animate(
@@ -433,7 +433,7 @@ class _YoutubeAudioPlayerState extends State<YoutubeAudioPlayer> {
       builder: (context) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.8),
+            color: Colors.black.withValues(alpha: 0.8),
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: EdgeInsets.all(16),
